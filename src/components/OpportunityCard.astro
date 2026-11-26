@@ -1,5 +1,4 @@
 ---
-import CategoryThumb from './CategoryThumb.astro';
 import { CATEGORY_LABELS, effectiveStatus, formatDate, type Opportunity } from '../data/opportunities';
 
 interface Props {
@@ -8,47 +7,65 @@ interface Props {
 
 const { opp } = Astro.props;
 const status = effectiveStatus(opp);
-const statusStyle =
-	status === 'open'
-		? 'bg-emerald-100 text-emerald-800'
-		: status === 'closed'
-			? 'bg-red-100 text-red-800'
-			: 'bg-amber-100 text-amber-800';
-const statusText = status === 'open' ? 'Open' : status === 'closed' ? 'Closed' : 'Unverified';
+const isOpen = status === 'open';
 const domain = (() => {
 	try {
-		return new URL(opp.sourceUrl).hostname;
+		return new URL(opp.sourceUrl).hostname.replace(/^www\./, '');
 	} catch {
 		return opp.sourceUrl;
 	}
 })();
+const initial = opp.organization.trim().charAt(0).toUpperCase();
+const orgShort = opp.organization.replace(/\s*\(.*$/, '').replace(/,.*$/, '');
+const saveId = opp.title
+	.toLowerCase()
+	.replace(/[^a-z0-9]+/g, '-')
+	.replace(/^-+|-+$/g, '')
+	.slice(0, 60);
+const btnLabel =
+	opp.type === 'job'
+		? 'Apply job'
+		: opp.type === 'course'
+			? 'View course'
+			: opp.type === 'scholarship'
+				? 'Apply now'
+				: opp.type === 'internship'
+					? 'Apply now'
+					: 'Read guide';
 ---
 
-<article class="flex flex-col overflow-hidden rounded-xl border border-line bg-white shadow-sm transition hover:shadow-md">
-	<CategoryThumb category={opp.category} label={opp.title} class="aspect-[16/9] w-full" />
-	<div class="flex flex-1 flex-col p-5">
-		<div class="flex flex-wrap items-center gap-2 text-xs">
-			<span class={`rounded-full px-2.5 py-1 font-semibold ${statusStyle}`}>{statusText}</span>
-			<span class="rounded-full bg-brand-50 px-2.5 py-1 font-semibold text-brand-700">{CATEGORY_LABELS[opp.category]}</span>
+<article class="relative flex min-w-0 flex-col rounded-md border border-line bg-white p-5 shadow-[0_2px_10px_rgba(0,0,0,0.06)] transition hover:shadow-[0_8px_24px_rgba(0,0,0,0.10)]">
+	<button
+		type="button"
+		class="save-job absolute right-4 top-4 p-1 text-brand-600 hover:text-brand-700"
+		data-id={saveId}
+		aria-label={`Save ${opp.title}`}
+		aria-pressed="false"
+		title="Save this opportunity"
+	>
+		<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3h14a1 1 0 0 1 1 1v17l-8-4.5L4 21V4a1 1 0 0 1 1-1z" /></svg>
+	</button>
+	<div class="flex items-start gap-3 pr-7">
+		<span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-brand-600 text-lg font-extrabold text-white" aria-hidden="true">{initial}</span>
+		<div class="min-w-0">
+			<p class="truncate text-sm font-bold text-brand-600">{orgShort}</p>
+			<p class="truncate text-xs text-muted">{opp.location}</p>
 		</div>
-		<h3 class="mt-3 text-lg font-bold leading-snug text-navy-900">{opp.title}</h3>
-		<p class="mt-1 text-sm font-medium text-navy-700">{opp.organization} · {opp.location}</p>
-		<dl class="mt-3 space-y-1.5 text-sm text-body">
-			<div class="flex gap-2"><dt class="w-24 shrink-0 font-semibold text-navy-900">Deadline:</dt><dd>{formatDate(opp.deadline)}</dd></div>
-			<div class="flex gap-2"><dt class="w-24 shrink-0 font-semibold text-navy-900">Eligibility:</dt><dd class="line-clamp-2">{opp.eligibility}</dd></div>
-			<div class="flex gap-2"><dt class="w-24 shrink-0 font-semibold text-navy-900">Fees:</dt><dd>{opp.fees}</dd></div>
-		</dl>
-		<div class="mt-4 flex items-center justify-between gap-3 border-t border-line pt-4">
-			<span class="text-xs text-muted">Verified {opp.verifiedDate} · Source: {domain}</span>
-		</div>
-		<a
-			href={opp.sourceUrl}
-			target="_blank"
-			rel="noopener noreferrer"
-			class="mt-3 inline-flex items-center justify-center gap-1 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
-		>
-			Apply on official site <span aria-hidden="true">↗</span>
-		</a>
-		<p class="mt-2 text-xs text-muted">Always confirm the deadline and requirements on the official page before applying.</p>
 	</div>
+	<h3 class="mt-4 text-lg font-extrabold leading-snug text-ink line-clamp-2">{opp.title}</h3>
+	<p class="mt-1 text-xs font-medium text-muted">
+		{CATEGORY_LABELS[opp.category]}
+		{!isOpen && <span class="font-bold text-red-600"> · {status === 'closed' ? 'Closed' : 'Unverified'}</span>}
+	</p>
+	<p class="mt-2 flex-1 text-sm leading-relaxed text-body line-clamp-3">{opp.eligibility}</p>
+	<p class="mt-3 text-sm font-bold text-brand-600">Deadline: {formatDate(opp.deadline)}</p>
+	<a
+		href={opp.sourceUrl}
+		target="_blank"
+		rel="noopener noreferrer"
+		class="mt-3 flex items-center justify-center gap-1 bg-brand-600 px-4 py-3 text-sm font-bold text-white hover:bg-brand-700"
+	>
+		{btnLabel} <span aria-hidden="true">↗</span>
+	</a>
+	<p class="mt-2 text-center text-[11px] text-muted">Verified {opp.verifiedDate} · Source: {domain}</p>
 </article>

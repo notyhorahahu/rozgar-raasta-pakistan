@@ -6,6 +6,8 @@ tags: ["government-jobs", "ppsc", "fpsc", "njp", "pakistan"]
 date: 2026-11-26
 updated: 2026-11-26
 author: "Rozgar Raasta Team"
+image: /images/guide-government-jobs-in-pakistan-how-to-apply.jpg
+imageAlt: "A young Pakistani man filling in an online government job application form on a computer"
 featured: true
 ---
 

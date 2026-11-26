@@ -43,6 +43,27 @@
       "default": false,
       "type": "boolean"
     },
+    "image": {
+      "type": "string"
+    },
+    "imageAlt": {
+      "type": "string"
+    },
+    "video": {
+      "type": "string"
+    },
+    "videoTitle": {
+      "type": "string"
+    },
+    "videoChannel": {
+      "type": "string"
+    },
+    "videoUrl": {
+      "type": "string"
+    },
+    "videoNote": {
+      "type": "string"
+    },
     "$schema": {
       "type": "string"
     }

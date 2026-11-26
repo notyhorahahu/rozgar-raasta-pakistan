@@ -6,6 +6,8 @@ tags: ["fiverr", "freelancing", "beginners", "profile"]
 date: 2026-11-26
 updated: 2026-11-26
 author: "Rozgar Raasta Team"
+image: /images/guide-how-to-create-a-fiverr-profile.jpg
+imageAlt: "A young Pakistani woman creating an online work profile on her laptop at a tidy home desk"
 featured: false
 ---
 

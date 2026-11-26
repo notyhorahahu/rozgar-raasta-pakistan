@@ -6,6 +6,8 @@ tags: ["freelancing", "beginners", "pakistan", "fiverr", "upwork"]
 date: 2026-11-26
 updated: 2026-11-26
 author: "Rozgar Raasta Team"
+image: /images/guide-how-to-start-freelancing-in-pakistan.jpg
+imageAlt: "A young Pakistani beginner freelancer setting up a work profile on a laptop at a small home desk"
 featured: true
 ---
 

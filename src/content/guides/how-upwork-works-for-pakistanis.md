@@ -6,6 +6,8 @@ tags: ["upwork", "freelancing", "pakistan", "beginners"]
 date: 2026-11-26
 updated: 2026-11-26
 author: "Rozgar Raasta Team"
+image: /images/guide-how-upwork-works-for-pakistanis.jpg
+imageAlt: "A young Pakistani man writing a job proposal on a laptop at his home desk"
 featured: false
 ---
 

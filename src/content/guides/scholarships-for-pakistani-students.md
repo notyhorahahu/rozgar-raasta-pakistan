@@ -6,6 +6,8 @@ tags: ["scholarships", "hec", "peef", "students", "pakistan"]
 date: 2026-11-26
 updated: 2026-11-26
 author: "Rozgar Raasta Team"
+image: /images/guide-scholarships-for-pakistani-students.jpg
+imageAlt: "A Pakistani university student in a graduation gown holding her documents outside a university building"
 featured: true
 ---
 

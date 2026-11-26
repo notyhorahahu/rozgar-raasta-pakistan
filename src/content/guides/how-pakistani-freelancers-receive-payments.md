@@ -6,6 +6,8 @@ tags: ["payments", "payoneer", "freelancing", "pakistan", "jazzcash"]
 date: 2026-11-26
 updated: 2026-11-26
 author: "Rozgar Raasta Team"
+image: /images/guide-how-pakistani-freelancers-receive-payments.jpg
+imageAlt: "A Pakistani freelancer checking a payment on a smartphone while a laptop sits open beside him"
 featured: false
 ---
 

@@ -9,7 +9,7 @@ const counts: Record<string, number> = {};
 for (const g of allGuides) counts[g.data.category] = (counts[g.data.category] ?? 0) + 1;
 ---
 <BaseLayout title="All Guides" description="Practical, honest guides for Pakistani job seekers, students and freelancers — CVs, interviews, freelancing, scholarships, skills and online earning.">
-	<section class="bg-gradient-to-b from-brand-50 to-white border-b border-line">
+	<section class="bg-cream hero-grid border-b border-black/10">
 		<div class="max-w-7xl mx-auto px-4 py-10 md:py-12">
 			<h1 class="text-3xl md:text-4xl">All Guides</h1>
 			<p class="mt-3 max-w-3xl text-base md:text-lg leading-relaxed">Practical guides written for Pakistanis — no copied content, no fake promises, no invented credentials. Every guide links to the official source it talks about.</p>
@@ -17,12 +17,12 @@ for (const g of allGuides) counts[g.data.category] = (counts[g.data.category] ??
 	</section>
 	<section class="max-w-7xl mx-auto px-4 py-8">
 		<div class="flex flex-wrap gap-2">
-			<a href="/guides" class="rounded-full bg-navy-900 px-4 py-2 text-sm font-semibold text-white">All ({allGuides.length})</a>
+			<a href="/guides" class="bg-ink px-4 py-2 text-sm font-semibold text-white">All ({allGuides.length})</a>
 			{GUIDE_CATEGORIES.map((c) => (
-				<a href={c.href} class="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-navy-900 hover:border-brand-600">{c.label} ({counts[c.slug] ?? 0})</a>
+				<a href={c.href} class="border border-line bg-white px-4 py-2 text-sm font-semibold text-navy-900 hover:border-brand-600">{c.label} ({counts[c.slug] ?? 0})</a>
 			))}
 		</div>
-		<div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+		<div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
 			{allGuides.map((g) => <ArticleCard guide={g} />)}
 		</div>
 	</section>

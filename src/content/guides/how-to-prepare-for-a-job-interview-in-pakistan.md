@@ -6,6 +6,8 @@ tags: ["interview", "jobs", "pakistan", "career"]
 date: 2026-11-26
 updated: 2026-11-26
 author: "Rozgar Raasta Team"
+image: /images/guide-how-to-prepare-for-a-job-interview-in-pakistan.jpg
+imageAlt: "A job candidate in formal dress shaking hands with an interviewer across a desk"
 featured: false
 ---
 

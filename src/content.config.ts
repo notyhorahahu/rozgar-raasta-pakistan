@@ -12,6 +12,13 @@ const guides = defineCollection({
 		updated: z.coerce.date(),
 		author: z.string().default('Rozgar Raasta Team'),
 		featured: z.boolean().default(false),
+		image: z.string().optional(),
+		imageAlt: z.string().optional(),
+		video: z.string().optional(),
+		videoTitle: z.string().optional(),
+		videoChannel: z.string().optional(),
+		videoUrl: z.string().optional(),
+		videoNote: z.string().optional(),
 	}),
 });
 

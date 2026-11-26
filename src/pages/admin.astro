@@ -19,14 +19,14 @@ for (const g of guides) byGuideCat[g.data.category] = (byGuideCat[g.data.categor
 		<p class="mt-2 text-sm text-muted">Content counts are real. Traffic and earnings are not shown because Google Analytics and AdSense are not connected yet — we never fabricate numbers.</p>
 
 		<div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-			<div class="rounded-xl border border-line bg-white p-5 shadow-sm"><p class="text-3xl font-bold text-navy-900">{guides.length}</p><p class="mt-1 text-sm text-muted">Published guides</p></div>
-			<div class="rounded-xl border border-line bg-white p-5 shadow-sm"><p class="text-3xl font-bold text-navy-900">{opps.length}</p><p class="mt-1 text-sm text-muted">Opportunity listings</p></div>
-			<div class="rounded-xl border border-line bg-white p-5 shadow-sm"><p class="text-3xl font-bold text-emerald-700">{openOpps.length}</p><p class="mt-1 text-sm text-muted">Open opportunities</p></div>
-			<div class="rounded-xl border border-line bg-white p-5 shadow-sm"><p class="text-3xl font-bold text-red-700">{closedOpps.length}</p><p class="mt-1 text-sm text-muted">Closed opportunities</p></div>
+			<div class="rounded-md border border-line bg-white p-5 shadow-sm"><p class="text-3xl font-bold text-navy-900">{guides.length}</p><p class="mt-1 text-sm text-muted">Published guides</p></div>
+			<div class="rounded-md border border-line bg-white p-5 shadow-sm"><p class="text-3xl font-bold text-navy-900">{opps.length}</p><p class="mt-1 text-sm text-muted">Opportunity listings</p></div>
+			<div class="rounded-md border border-line bg-white p-5 shadow-sm"><p class="text-3xl font-bold text-emerald-700">{openOpps.length}</p><p class="mt-1 text-sm text-muted">Open opportunities</p></div>
+			<div class="rounded-md border border-line bg-white p-5 shadow-sm"><p class="text-3xl font-bold text-red-700">{closedOpps.length}</p><p class="mt-1 text-sm text-muted">Closed opportunities</p></div>
 		</div>
 
 		<div class="mt-8 grid gap-6 lg:grid-cols-2">
-			<div class="rounded-xl border border-line bg-white p-6 shadow-sm">
+			<div class="rounded-md border border-line bg-white p-6 shadow-sm">
 				<h2 class="text-xl">Opportunities by category</h2>
 				<ul class="mt-4 space-y-2 text-sm">
 					{Object.entries(byCat).sort((a, b) => b[1] - a[1]).map(([cat, n]) => (
@@ -34,7 +34,7 @@ for (const g of guides) byGuideCat[g.data.category] = (byGuideCat[g.data.categor
 					))}
 				</ul>
 			</div>
-			<div class="rounded-xl border border-line bg-white p-6 shadow-sm">
+			<div class="rounded-md border border-line bg-white p-6 shadow-sm">
 				<h2 class="text-xl">Guides by category</h2>
 				<ul class="mt-4 space-y-2 text-sm">
 					{Object.entries(byGuideCat).sort((a, b) => b[1] - a[1]).map(([cat, n]) => (
@@ -45,26 +45,26 @@ for (const g of guides) byGuideCat[g.data.category] = (byGuideCat[g.data.categor
 		</div>
 
 		<div class="mt-8 grid gap-6 lg:grid-cols-2">
-			<div class="rounded-xl border border-dashed border-line bg-brand-50 p-6">
+			<div class="rounded-md border border-dashed border-line bg-brand-50 p-6">
 				<h2 class="text-xl">Traffic — not connected</h2>
 				<p class="mt-2 text-sm leading-relaxed">Google Analytics is not connected yet. Daily visitors, page views and traffic sources will appear here once the GA4 measurement ID is added to the site configuration. No numbers are shown until then.</p>
 				<p class="mt-3 text-sm"><a href="/docs/analytics-setup" class="font-semibold text-brand-700 hover:underline">See analytics setup steps →</a></p>
 			</div>
-			<div class="rounded-xl border border-dashed border-line bg-brand-50 p-6">
+			<div class="rounded-md border border-dashed border-line bg-brand-50 p-6">
 				<h2 class="text-xl">AdSense — not applied</h2>
 				<p class="mt-2 text-sm leading-relaxed">AdSense has not been applied for. Impressions, CTR, RPM and earnings will appear here only after approval and after the official ad code is added. We never show fabricated earnings.</p>
 				<p class="mt-3 text-sm"><a href="/docs/adsense-readiness" class="font-semibold text-brand-700 hover:underline">See AdSense readiness audit →</a></p>
 			</div>
 		</div>
 
-		<div class="mt-8 rounded-xl border border-line bg-white p-6 shadow-sm">
+		<div class="mt-8 rounded-md border border-line bg-white p-6 shadow-sm">
 			<h2 class="text-xl">Content management</h2>
 			<p class="mt-2 text-sm leading-relaxed">Guides live in <code class="rounded bg-brand-50 px-1.5 py-0.5 text-xs">src/content/guides/</code> as Markdown. Opportunities live in <code class="rounded bg-brand-50 px-1.5 py-0.5 text-xs">src/data/opportunities.json</code>. Edit a file, commit, and Vercel rebuilds the site automatically. Expired opportunities are marked Closed automatically by their deadline.</p>
 			<div class="mt-4 flex flex-wrap gap-3">
-				<a href="/guides" class="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white">View all guides</a>
-				<a href="/opportunities" class="rounded-lg border border-line bg-white px-4 py-2 text-sm font-semibold text-navy-900">View all opportunities</a>
-				<a href="/sitemap-index.xml" class="rounded-lg border border-line bg-white px-4 py-2 text-sm font-semibold text-navy-900">Sitemap</a>
-				<a href="/rss.xml" class="rounded-lg border border-line bg-white px-4 py-2 text-sm font-semibold text-navy-900">RSS feed</a>
+				<a href="/guides" class=" bg-brand-600 px-4 py-2 text-sm font-semibold text-white">View all guides</a>
+				<a href="/opportunities" class=" border border-line bg-white px-4 py-2 text-sm font-semibold text-navy-900">View all opportunities</a>
+				<a href="/sitemap-index.xml" class=" border border-line bg-white px-4 py-2 text-sm font-semibold text-navy-900">Sitemap</a>
+				<a href="/rss.xml" class=" border border-line bg-white px-4 py-2 text-sm font-semibold text-navy-900">RSS feed</a>
 			</div>
 		</div>
 	</section>

@@ -6,6 +6,8 @@ tags: ["cv", "jobs", "pakistan", "career"]
 date: 2026-11-26
 updated: 2026-11-26
 author: "Rozgar Raasta Team"
+image: /images/guide-how-to-write-a-cv-for-pakistani-jobs.jpg
+imageAlt: "A young Pakistani graduate writing a CV on a laptop, with a printed CV page beside it"
 featured: true
 ---
 

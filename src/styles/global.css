@@ -1,46 +1,100 @@
 @import "tailwindcss";
 
 @theme {
-	--color-navy-950: #0a1a33;
-	--color-navy-900: #0f2440;
-	--color-navy-800: #16304f;
-	--color-navy-700: #1e3d63;
-	--color-navy-600: #274a75;
-	--color-brand-700: #1d4ed8;
-	--color-brand-600: #2563eb;
-	--color-brand-500: #3b82f6;
-	--color-brand-50: #eff6ff;
-	--color-brand-100: #dbeafe;
-	--color-ink: #0f2440;
-	--color-body: #334155;
-	--color-muted: #64748b;
-	--color-line: #e2e8f0;
+	/* Makaryo palette */
+	--color-brand-50: #fff1ec;
+	--color-brand-100: #ffe2d6;
+	--color-brand-500: #ff6a45;
+	--color-brand-600: #ff4c28;
+	--color-brand-700: #d93815;
+	--color-cream: #fff5f0;
+	--color-sky-panel: #85b6c9;
+	--color-pink-panel: #fca6b3;
+	--color-cta-navy: #1e1d22;
+	--color-ink: #111111;
+	--color-body: #555555;
+	--color-muted: #666666;
+	--color-line: #e7e7e7;
+	--color-grey-bg: #eeeeee;
+	/* Legacy navy tokens remapped to the Makaryo near-black scale */
+	--color-navy-950: #101010;
+	--color-navy-900: #111111;
+	--color-navy-800: #1e1d22;
+	--color-navy-700: #2a2a2a;
+	--color-navy-600: #444444;
 	--color-gold: #b45309;
-	--font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	--font-sans: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-html {
-	scroll-behavior: smooth;
+@layer base {
+	html {
+		scroll-behavior: smooth;
+	}
+
+	body {
+		@apply bg-white text-body antialiased;
+		font-family: var(--font-sans);
+	}
+
+	h1, h2, h3, h4, h5, h6 {
+		@apply text-ink font-extrabold tracking-tight;
+	}
+
+	a {
+		@apply text-brand-600;
+	}
 }
 
-body {
-	@apply bg-white text-body antialiased;
-	font-family: var(--font-sans);
+/* Faint grid on the cream hero, as in the Makaryo reference */
+.hero-grid {
+	background-image:
+		linear-gradient(to right, rgba(17, 17, 17, 0.045) 1px, transparent 1px),
+		linear-gradient(to bottom, rgba(17, 17, 17, 0.045) 1px, transparent 1px);
+	background-size: 72px 72px;
 }
 
-h1, h2, h3, h4, h5, h6 {
-	@apply text-navy-900 font-bold tracking-tight;
+/* Hard black offset shadow on the orange hero stat cards (neo-brutalist) */
+.shadow-hard {
+	box-shadow: 10px 10px 0 0 #111111;
 }
 
-a {
-	@apply text-brand-600;
+/* Subtle diagonal stripes on the orange trust band */
+.stripes {
+	background-image: repeating-linear-gradient(
+		115deg,
+		rgba(255, 255, 255, 0.055) 0 2px,
+		transparent 2px 26px
+	);
+}
+
+/* Faint topographic contour rings on the dark CTA panel */
+.topo {
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='320'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.08'%3E%3Cellipse cx='320' cy='160' rx='300' ry='140'/%3E%3Cellipse cx='320' cy='160' rx='240' ry='110'/%3E%3Cellipse cx='320' cy='160' rx='180' ry='82'/%3E%3Cellipse cx='320' cy='160' rx='120' ry='54'/%3E%3Cellipse cx='320' cy='160' rx='60' ry='26'/%3E%3C/g%3E%3C/svg%3E");
+	background-size: 640px 320px;
+	background-position: center;
+}
+
+/* Vertical category titles on the tall tiles (reads bottom-to-top) */
+.vertical-title {
+	writing-mode: vertical-rl;
+	transform: rotate(180deg);
+}
+
+/* Saved/bookmarked opportunity toggle */
+.save-job svg {
+	fill: none;
+	stroke: currentColor;
+}
+.save-job.is-saved svg {
+	fill: #ff4c28;
+	stroke: #ff4c28;
 }
 
 .prose-rrp h2 {
-	@apply text-2xl md:text-3xl mt-10 mb-4 text-navy-900;
+	@apply text-2xl md:text-3xl mt-10 mb-4 text-ink;
 }
 .prose-rrp h3 {
-	@apply text-xl md:text-2xl mt-8 mb-3 text-navy-800;
+	@apply text-xl md:text-2xl mt-8 mb-3 text-ink;
 }
 .prose-rrp p {
 	@apply leading-relaxed mb-4;
@@ -55,10 +109,10 @@ a {
 	@apply underline decoration-brand-500 underline-offset-2;
 }
 .prose-rrp strong {
-	@apply text-navy-900 font-semibold;
+	@apply text-ink font-semibold;
 }
 .prose-rrp blockquote {
-	@apply border-l-4 border-brand-600 bg-brand-50 px-4 py-3 my-6 rounded-r-lg text-navy-800;
+	@apply border-l-4 border-brand-600 bg-brand-50 px-4 py-3 my-6 rounded-r-md text-ink;
 }
 .prose-rrp table {
 	@apply w-full text-sm my-6 border-collapse;
@@ -67,7 +121,7 @@ a {
 	max-width: 100%;
 }
 .prose-rrp th {
-	@apply bg-navy-900 text-white text-left px-3 py-2;
+	@apply bg-ink text-white text-left px-3 py-2;
 }
 .prose-rrp td {
 	@apply border border-line px-3 py-2 align-top;

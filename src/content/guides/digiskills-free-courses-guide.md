@@ -6,6 +6,8 @@ tags: ["digiskills", "free-courses", "skills", "pakistan"]
 date: 2026-11-26
 updated: 2026-11-26
 author: "Rozgar Raasta Team"
+image: /images/guide-digiskills-free-courses-guide.jpg
+imageAlt: "A young Pakistani student taking a free online course on a laptop at home, wearing headphones"
 featured: true
 ---
 
