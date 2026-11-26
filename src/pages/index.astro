@@ -1,0 +1,217 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import OpportunityCard from '../components/OpportunityCard.astro';
+import CategoryThumb from '../components/CategoryThumb.astro';
+import { getCollection } from 'astro:content';
+import opportunitiesData from '../data/opportunities.json';
+import { effectiveStatus, type Opportunity } from '../data/opportunities';
+import { GUIDE_CATEGORIES } from '../data/site';
+
+const allGuides = (await getCollection('guides')).sort(
+	(a, b) => b.data.updated.valueOf() - a.data.updated.valueOf()
+);
+const opps = opportunitiesData as Opportunity[];
+const openOpps = opps.filter((o) => effectiveStatus(o) === 'open');
+const latestJobs = openOpps.filter((o) => ['government', 'private', 'remote'].includes(o.category)).slice(0, 6);
+const courses = opps.filter((o) => o.category === 'course').slice(0, 4);
+const scholarships = opps.filter((o) => o.category === 'scholarship').slice(0, 4);
+const freelancingGuides = allGuides.filter((g) => g.data.category === 'freelancing').slice(0, 3);
+const aiGuides = allGuides.filter((g) => g.data.category === 'ai-tools').slice(0, 3);
+const latestArticles = allGuides.slice(0, 6);
+const popular = allGuides.filter((g) => g.data.category === 'career' || g.data.category === 'earning').slice(0, 4);
+
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'WebSite',
+	name: 'Rozgar Raasta Pakistan',
+	url: 'https://rozgarraasta.pages.dev',
+	description: 'Learn Skills. Find Opportunities. Build Your Future.',
+	potentialAction: {
+		'@type': 'SearchAction',
+		target: 'https://rozgarraasta.pages.dev/search?q={search_term_string}',
+		'query-input': 'required name=search_term_string',
+	},
+};
+---
+
+<BaseLayout
+	title="Rozgar Raasta Pakistan"
+	description="Find genuine government and private jobs, remote work, freelancing guides, free courses, scholarships and internships in Pakistan — verified from official sources."
+	jsonLd={jsonLd}
+>
+	<!-- Hero -->
+	<section class="bg-gradient-to-b from-brand-50 to-white border-b border-line">
+		<div class="max-w-7xl mx-auto px-4 py-12 md:py-16 text-center">
+			<p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">Pakistan's trusted opportunity platform</p>
+			<h1 class="mt-3 text-4xl md:text-5xl lg:text-6xl leading-tight">Learn Skills. Find Opportunities.<br class="hidden md:block" /> Build Your Future.</h1>
+			<p class="mx-auto mt-4 max-w-2xl text-base md:text-lg leading-relaxed">
+				Genuine jobs, free courses, scholarships and freelancing guides for Pakistanis — every listing verified against the official source. No fake jobs. No fees to apply.
+			</p>
+			<form action="/search" method="get" role="search" class="mx-auto mt-8 flex max-w-xl items-center">
+				<label for="hero-search" class="sr-only">Search jobs, courses and guides</label>
+				<input
+					id="hero-search"
+					type="search"
+					name="q"
+					placeholder="Try: PPSC jobs, DigiSkills, Fiverr, scholarships..."
+					class="w-full rounded-l-xl border border-line border-r-0 px-5 py-3.5 text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-600"
+				/>
+				<button type="submit" class="rounded-r-xl bg-brand-600 px-6 py-3.5 text-base font-semibold text-white hover:bg-brand-700">Search</button>
+			</form>
+			<div class="mt-5 flex flex-wrap items-center justify-center gap-2 text-sm">
+				<span class="text-muted">Popular:</span>
+				<a href="/jobs/government" class="rounded-full border border-line bg-white px-3 py-1 hover:border-brand-600 hover:text-brand-700">Government Jobs</a>
+				<a href="/freelancing" class="rounded-full border border-line bg-white px-3 py-1 hover:border-brand-600 hover:text-brand-700">Freelancing</a>
+				<a href="/skills" class="rounded-full border border-line bg-white px-3 py-1 hover:border-brand-600 hover:text-brand-700">Free Courses</a>
+				<a href="/scholarships" class="rounded-full border border-line bg-white px-3 py-1 hover:border-brand-600 hover:text-brand-700">Scholarships</a>
+				<a href="/cv-builder" class="rounded-full border border-line bg-white px-3 py-1 hover:border-brand-600 hover:text-brand-700">CV Builder</a>
+			</div>
+		</div>
+	</section>
+
+	<!-- Category tiles -->
+	<section class="max-w-7xl mx-auto px-4 py-10" aria-label="Browse by category">
+		<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+			{GUIDE_CATEGORIES.slice(0, 7).map((c) => (
+				<a href={c.href} class="group rounded-xl border border-line overflow-hidden bg-white shadow-sm hover:shadow-md transition">
+					<CategoryThumb category={c.slug} label={c.label} class="h-28 w-full" />
+					<div class="p-4">
+						<h2 class="text-base font-bold text-navy-900 group-hover:text-brand-700">{c.label}</h2>
+						<p class="mt-1 text-sm text-body line-clamp-2">{c.blurb}</p>
+					</div>
+				</a>
+			))}
+			<a href="/opportunities" class="group rounded-xl border border-line overflow-hidden bg-navy-900 shadow-sm hover:shadow-md transition">
+				<div class="h-28 w-full flex items-end p-4">
+					<span class="text-3xl" aria-hidden="true">📋</span>
+				</div>
+				<div class="p-4">
+					<h2 class="text-base font-bold text-white">All Opportunities</h2>
+					<p class="mt-1 text-sm text-slate-300 line-clamp-2">Every verified job, course, scholarship and internship in one place.</p>
+				</div>
+			</a>
+		</div>
+	</section>
+
+	<!-- Latest verified jobs -->
+	<section class="max-w-7xl mx-auto px-4 py-6" aria-label="Latest verified jobs">
+		<div class="flex items-end justify-between gap-4">
+			<div>
+				<h2 class="text-2xl md:text-3xl">Latest Verified Jobs</h2>
+				<p class="mt-1 text-sm text-muted">Checked against official sources on 26 November 2026. Expired listings are never shown as open.</p>
+			</div>
+			<a href="/opportunities" class="shrink-0 text-sm font-semibold text-brand-700 hover:underline">View all →</a>
+		</div>
+		{latestJobs.length > 0 ? (
+			<div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+				{latestJobs.map((opp) => <OpportunityCard opp={opp} />)}
+			</div>
+		) : (
+			<p class="mt-6 rounded-xl border border-line bg-brand-50 p-5 text-sm text-navy-800">
+				We are verifying today's openings against the official portals. Meanwhile, browse the official portals directly:
+				<a href="https://jobs.gov.pk/" target="_blank" rel="noopener" class="font-semibold underline">jobs.gov.pk</a> ·
+				<a href="https://njp.gov.pk/" target="_blank" rel="noopener" class="font-semibold underline">njp.gov.pk</a> ·
+				<a href="https://www.ppsc.gop.pk/" target="_blank" rel="noopener" class="font-semibold underline">ppsc.gop.pk</a> ·
+				<a href="https://www.fpsc.gov.pk/" target="_blank" rel="noopener" class="font-semibold underline">fpsc.gov.pk</a>
+			</p>
+		)}
+	</section>
+
+	<!-- Free courses + scholarships -->
+	<section class="max-w-7xl mx-auto px-4 py-6 grid gap-10 lg:grid-cols-2" aria-label="Courses and scholarships">
+		<div>
+			<div class="flex items-end justify-between gap-4">
+				<h2 class="text-2xl md:text-3xl">Free Courses</h2>
+				<a href="/skills" class="shrink-0 text-sm font-semibold text-brand-700 hover:underline">View all →</a>
+			</div>
+			{courses.length > 0 ? (
+				<div class="mt-6 grid gap-5 sm:grid-cols-2">
+					{courses.map((opp) => <OpportunityCard opp={opp} />)}
+				</div>
+			) : (
+				<p class="mt-6 rounded-xl border border-line bg-brand-50 p-5 text-sm text-navy-800">
+					Free courses from DigiSkills, NAVTTC, Coursera, Google Skillshop and Microsoft Learn are being verified.
+					<a href="/skills" class="font-semibold underline">See the Skills &amp; Courses page</a>.
+				</p>
+			)}
+		</div>
+		<div>
+			<div class="flex items-end justify-between gap-4">
+				<h2 class="text-2xl md:text-3xl">Scholarships</h2>
+				<a href="/scholarships" class="shrink-0 text-sm font-semibold text-brand-700 hover:underline">View all →</a>
+			</div>
+			{scholarships.length > 0 ? (
+				<div class="mt-6 grid gap-5 sm:grid-cols-2">
+					{scholarships.map((opp) => <OpportunityCard opp={opp} />)}
+				</div>
+			) : (
+				<p class="mt-6 rounded-xl border border-line bg-brand-50 p-5 text-sm text-navy-800">
+					Scholarship programmes from HEC and other official bodies are being verified.
+					<a href="/scholarships" class="font-semibold underline">See the Scholarships page</a>.
+				</p>
+			)}
+		</div>
+	</section>
+
+	<!-- Freelancing + AI tools guides -->
+	<section class="max-w-7xl mx-auto px-4 py-6 grid gap-10 lg:grid-cols-2" aria-label="Freelancing and AI tools guides">
+		<div>
+			<div class="flex items-end justify-between gap-4">
+				<h2 class="text-2xl md:text-3xl">Freelancing Guides</h2>
+				<a href="/freelancing" class="shrink-0 text-sm font-semibold text-brand-700 hover:underline">View all →</a>
+			</div>
+			<div class="mt-6 grid gap-5 sm:grid-cols-1">
+				{freelancingGuides.map((g) => <ArticleCard guide={g} />)}
+			</div>
+		</div>
+		<div>
+			<div class="flex items-end justify-between gap-4">
+				<h2 class="text-2xl md:text-3xl">AI Tools</h2>
+				<a href="/ai-tools" class="shrink-0 text-sm font-semibold text-brand-700 hover:underline">View all →</a>
+			</div>
+			<div class="mt-6 grid gap-5 sm:grid-cols-1">
+				{aiGuides.map((g) => <ArticleCard guide={g} />)}
+			</div>
+		</div>
+	</section>
+
+	<!-- Latest articles -->
+	<section class="max-w-7xl mx-auto px-4 py-6" aria-label="Latest articles">
+		<div class="flex items-end justify-between gap-4">
+			<h2 class="text-2xl md:text-3xl">Latest Articles</h2>
+			<a href="/guides" class="shrink-0 text-sm font-semibold text-brand-700 hover:underline">All guides →</a>
+		</div>
+		<div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+			{latestArticles.map((g) => <ArticleCard guide={g} />)}
+		</div>
+	</section>
+
+	<!-- Popular guides -->
+	{popular.length > 0 && (
+		<section class="max-w-7xl mx-auto px-4 py-6" aria-label="Popular guides">
+			<h2 class="text-2xl md:text-3xl">Popular Guides</h2>
+			<div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+				{popular.map((g) => <ArticleCard guide={g} />)}
+			</div>
+		</section>
+	)}
+
+	<!-- Trust strip -->
+	<section class="max-w-7xl mx-auto px-4 py-10" aria-label="Our promise">
+		<div class="rounded-2xl bg-navy-900 px-6 py-8 md:px-10 text-white grid gap-6 md:grid-cols-3">
+			<div>
+				<h3 class="text-white text-lg">✓ Verified sources only</h3>
+				<p class="mt-2 text-sm text-slate-300 leading-relaxed">Every opportunity links to the official website. We never invent jobs, salaries or deadlines.</p>
+			</div>
+			<div>
+				<h3 class="text-white text-lg">✓ No fees, no scams</h3>
+				<p class="mt-2 text-sm text-slate-300 leading-relaxed">We never charge for listings and never ask for CNIC or bank details. If someone asks you to pay for a job, it is a scam.</p>
+			</div>
+			<div>
+				<h3 class="text-white text-lg">✓ Honest guidance</h3>
+				<p class="mt-2 text-sm text-slate-300 leading-relaxed">No guaranteed income, no fake promises. We explain real fees, real requirements and real risks.</p>
+			</div>
+		</div>
+	</section>
+</BaseLayout>

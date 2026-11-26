@@ -1,0 +1,19 @@
+---
+import CategoryPage from '../../components/CategoryPage.astro';
+---
+<CategoryPage
+	title="Pakistan Government Jobs"
+	description="Verified Pakistan government jobs from PPSC, FPSC, National Job Portal and Punjab Job Portal — with official application links."
+	intro="Government jobs in Pakistan — PPSC, FPSC, federal and provincial departments. Every listing is verified on the official portal before it appears here, and expired advertisements are never shown as open."
+	oppCategories={['government']}
+	guideCategories={['career']}
+	guideHeading="Career Guides"
+	officialLinks={[
+		{ label: 'National Job Portal (NJP)', href: 'https://njp.gov.pk/', note: 'Federal government jobs in one place.' },
+		{ label: 'National Employment Exchange', href: 'https://jobs.gov.pk/', note: 'Government employment exchange.' },
+		{ label: 'Punjab Public Service Commission', href: 'https://www.ppsc.gop.pk/', note: 'Punjab provincial government jobs and advertisements.' },
+		{ label: 'Federal Public Service Commission', href: 'https://www.fpsc.gov.pk/', note: 'Federal government jobs and CSS-related recruitment.' },
+		{ label: 'Punjab Job Portal', href: 'https://jobs.punjab.gov.pk/', note: 'Punjab government department jobs.' },
+		{ label: 'NAVTTC', href: 'https://navttc.gov.pk/', note: 'Free technical and vocational training programmes.' },
+	]}
+/>

@@ -1,0 +1,17 @@
+---
+import CategoryPage from '../components/CategoryPage.astro';
+---
+<CategoryPage
+	title="Scholarships for Pakistani Students"
+	description="Scholarships for Pakistani students — HEC, provincial funds and international programmes. Verified official links only, no invented deadlines."
+	intro="Scholarships can fund your education in Pakistan or abroad. We list programmes with links to the official body, and we never invent deadlines — always confirm the current status on the official website."
+	oppCategories={['scholarship']}
+	guideCategories={['student']}
+	guideHeading="Student Guides"
+	officialLinks={[
+		{ label: 'Higher Education Commission (HEC)', href: 'https://www.hec.gov.pk/', note: 'Pakistan\'s main scholarship body.' },
+		{ label: 'Punjab Educational Endowment Fund (PEEF)', href: 'https://www.peef.org.pk/', note: 'Scholarships for Punjab students.' },
+		{ label: 'Chevening Scholarships', href: 'https://www.chevening.org/', note: 'UK government scholarships for future leaders.' },
+		{ label: 'Commonwealth Scholarships', href: 'https://cscuk.fcdo.gov.uk/', note: 'UK Commonwealth scholarships.' },
+	]}
+/>

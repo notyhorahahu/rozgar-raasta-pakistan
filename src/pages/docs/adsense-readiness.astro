@@ -1,0 +1,43 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+<BaseLayout title="AdSense Readiness Audit" description="AdSense readiness audit for Rozgar Raasta Pakistan. Not applied — this is a readiness check only.">
+	<section class="max-w-3xl mx-auto px-4 py-12">
+		<h1 class="text-3xl md:text-4xl">AdSense Readiness Audit</h1>
+		<p class="mt-3 text-sm text-muted">Date: 26 November 2026 · Status: NOT APPLIED. Do not apply until the gaps below are closed.</p>
+		<div class="prose-rrp mt-6">
+			<h2>What AdSense requires</h2>
+			<p>Original, useful content with clear navigation; working About, Contact, Privacy Policy and Terms pages; mobile-friendly, fast-loading pages; no copied content, no misleading earning promises, no deceptive ad placement. The site must be complete before applying.</p>
+			<h2>Checklist</h2>
+			<table>
+				<thead><tr><th>Requirement</th><th>Status</th><th>Note</th></tr></thead>
+				<tbody>
+					<tr><td>Original, useful content</td><td>✅ Pass</td><td>25 original guides with FAQs, steps and official source links.</td></tr>
+					<tr><td>Clear navigation</td><td>✅ Pass</td><td>Header, mobile menu and footer nav covering all pages.</td></tr>
+					<tr><td>About / Contact / Privacy / Terms</td><td>✅ Pass</td><td>All four pages live and complete.</td></tr>
+					<tr><td>Disclaimer + Editorial transparency</td><td>✅ Pass</td><td>Disclaimer, Editorial Policy and Corrections Policy live.</td></tr>
+					<tr><td>Mobile usability</td><td>✅ Pass</td><td>Responsive layouts verified at 360–1440 px.</td></tr>
+					<tr><td>Performance</td><td>✅ Pass</td><td>Static Astro site, no heavy JS, system fonts, SVG graphics only.</td></tr>
+					<tr><td>No copied content</td><td>✅ Pass</td><td>All guides original; opportunities link to official sources.</td></tr>
+					<tr><td>No misleading earning promises</td><td>✅ Pass</td><td>Income is never described as guaranteed anywhere.</td></tr>
+					<tr><td>Sitemap + robots.txt</td><td>✅ Pass</td><td>/sitemap-index.xml and /robots.txt present.</td></tr>
+					<tr><td>HTTPS</td><td>⏳ Pending deploy</td><td>Cloudflare Pages provides HTTPS automatically.</td></tr>
+					<tr><td>Real traffic / site age</td><td>⏳ Pending</td><td>Let the site run and build genuine traffic first.</td></tr>
+					<tr><td>AdSense account + code</td><td>❌ Not done</td><td>Deliberate — apply only when ready and owner authorises it.</td></tr>
+				</tbody>
+			</table>
+			<h2>Gaps to close before applying</h2>
+			<ol>
+				<li>Deploy the site and confirm HTTPS, sitemap and robots.txt on the live URL.</li>
+				<li>Run Google PageSpeed Insights on the live homepage and fix any issues.</li>
+				<li>Submit the site to Google Search Console and confirm indexing.</li>
+				<li>Publish regularly for several weeks so the site shows genuine activity.</li>
+				<li>Owner authorisation — the application must be submitted by the owner from their own Google account.</li>
+			</ol>
+			<h2>After approval (only)</h2>
+			<p>Add the official AdSense code exactly as Google provides it. Keep ads separate from navigation and content. Track impressions, CTR, RPM and earnings in the admin dashboard. Monitor invalid traffic and never click your own ads.</p>
+			<h2>Absolutely forbidden</h2>
+			<p>Clicking our own ads. Asking users to click ads. Paying for ad clicks. Bots, click farms or purchased traffic. Misleading download buttons or accidental-click layouts. Fake page views. Website link clicks and AdSense ad clicks are different events.</p>
+		</div>
+	</section>
+</BaseLayout>

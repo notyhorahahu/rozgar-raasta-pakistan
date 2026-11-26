@@ -1,0 +1,77 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+	title: string;
+	description: string;
+	canonical?: string;
+	ogImage?: string;
+	type?: 'website' | 'article';
+	publishedTime?: string;
+	modifiedTime?: string;
+	jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+	noindex?: boolean;
+}
+
+const {
+	title,
+	description,
+	canonical,
+	ogImage = '/og-default.svg',
+	type = 'website',
+	publishedTime,
+	modifiedTime,
+	jsonLd,
+	noindex = false,
+} = Astro.props;
+
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? 'https://rozgarraasta.pages.dev';
+const canonicalUrl = canonical ?? new URL(Astro.url.pathname, siteUrl).toString();
+const fullTitle = title === 'Rozgar Raasta Pakistan' ? title : `${title} | Rozgar Raasta Pakistan`;
+
+const defaultJsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'Organization',
+	name: 'Rozgar Raasta Pakistan',
+	url: siteUrl,
+	logo: `${siteUrl}/logo.svg`,
+	slogan: 'Learn Skills. Find Opportunities. Build Your Future.',
+	sameAs: [],
+};
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>{fullTitle}</title>
+		<meta name="description" content={description} />
+		<link rel="canonical" href={canonicalUrl} />
+		{noindex && <meta name="robots" content="noindex, nofollow" />}
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta property="og:type" content={type} />
+		<meta property="og:site_name" content="Rozgar Raasta Pakistan" />
+		<meta property="og:title" content={fullTitle} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonicalUrl} />
+		<meta property="og:image" content={`${siteUrl}${ogImage}`} />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={fullTitle} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={`${siteUrl}${ogImage}`} />
+		{publishedTime && <meta property="article:published_time" content={publishedTime} />}
+		{modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+		<link rel="alternate" type="application/rss+xml" title="Rozgar Raasta Pakistan — Latest Articles" href="/rss.xml" />
+		<script type="application/ld+json" set:html={JSON.stringify(jsonLd ?? defaultJsonLd)} />
+	</head>
+	<body class="min-h-screen flex flex-col">
+		<Header />
+		<main class="flex-1">
+			<slot />
+		</main>
+		<Footer />
+	</body>
+</html>

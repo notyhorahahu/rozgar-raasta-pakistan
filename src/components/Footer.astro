@@ -1,0 +1,122 @@
+---
+const jobLinks = [
+	{ label: 'Latest Opportunities', href: '/opportunities' },
+	{ label: 'Government Jobs', href: '/jobs/government' },
+	{ label: 'Private Jobs', href: '/jobs/private' },
+	{ label: 'Remote Jobs', href: '/jobs/remote' },
+	{ label: 'Internships', href: '/internships' },
+	{ label: 'Scholarships', href: '/scholarships' },
+];
+const learnLinks = [
+	{ label: 'Freelancing', href: '/freelancing' },
+	{ label: 'Skills & Courses', href: '/skills' },
+	{ label: 'Online Earning', href: '/earning' },
+	{ label: 'AI Tools', href: '/ai-tools' },
+	{ label: 'Student Guides', href: '/student-guides' },
+	{ label: 'Business Guides', href: '/business-guides' },
+	{ label: 'Career Preparation', href: '/career-preparation' },
+	{ label: 'CV Builder', href: '/cv-builder' },
+];
+const companyLinks = [
+	{ label: 'About Us', href: '/about' },
+	{ label: 'Contact Us', href: '/contact' },
+	{ label: 'Advertise With Us', href: '/advertise' },
+	{ label: 'Editorial Policy', href: '/editorial-policy' },
+	{ label: 'Corrections Policy', href: '/corrections-policy' },
+	{ label: 'Privacy Policy', href: '/privacy' },
+	{ label: 'Terms & Conditions', href: '/terms' },
+	{ label: 'Disclaimer', href: '/disclaimer' },
+];
+const year = new Date().getFullYear();
+---
+
+<footer class="bg-navy-950 text-slate-300 mt-16">
+	<!-- Newsletter -->
+	<div class="border-b border-white/10">
+		<div class="max-w-7xl mx-auto px-4 py-10 grid gap-6 md:grid-cols-2 md:items-center">
+			<div>
+				<h2 class="text-white text-2xl font-bold">Get new opportunities in your inbox</h2>
+				<p class="mt-2 text-sm text-slate-400">One weekly email with verified jobs, scholarships and free courses. No spam, no selling your data. Unsubscribe anytime.</p>
+			</div>
+			<form id="newsletter-form" class="flex flex-col sm:flex-row gap-3" novalidate>
+				<label for="newsletter-email" class="sr-only">Email address</label>
+				<input
+					id="newsletter-email"
+					type="email"
+					name="email"
+					required
+					placeholder="Your email address"
+					class="flex-1 rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
+				/>
+				<button type="submit" class="rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white hover:bg-brand-500">Subscribe</button>
+			</form>
+			<p id="newsletter-msg" class="md:col-span-2 text-sm text-emerald-400 hidden" role="status"></p>
+		</div>
+	</div>
+
+	<!-- Link columns -->
+	<div class="max-w-7xl mx-auto px-4 py-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+		<div>
+			<img src="/logo.svg" alt="Rozgar Raasta Pakistan" class="h-10 w-auto bg-white rounded-lg px-2 py-1" width="240" height="64" />
+			<p class="mt-4 text-sm leading-relaxed text-slate-400">
+				Learn Skills. Find Opportunities. Build Your Future. A trustworthy Pakistani platform for genuine jobs, free courses, scholarships and practical career guidance.
+			</p>
+			<p class="mt-4 text-xs text-slate-500">We never charge for job listings and never ask for CNIC or bank details.</p>
+		</div>
+		<nav aria-label="Jobs">
+			<h3 class="text-white font-semibold mb-4">Jobs & Opportunities</h3>
+			<ul class="space-y-2 text-sm">
+				{jobLinks.map((l) => <li><a href={l.href} class="text-slate-400 hover:text-white">{l.label}</a></li>)}
+			</ul>
+		</nav>
+		<nav aria-label="Learn">
+			<h3 class="text-white font-semibold mb-4">Learn & Earn</h3>
+			<ul class="space-y-2 text-sm">
+				{learnLinks.map((l) => <li><a href={l.href} class="text-slate-400 hover:text-white">{l.label}</a></li>)}
+			</ul>
+		</nav>
+		<nav aria-label="Company">
+			<h3 class="text-white font-semibold mb-4">Company</h3>
+			<ul class="space-y-2 text-sm">
+				{companyLinks.map((l) => <li><a href={l.href} class="text-slate-400 hover:text-white">{l.label}</a></li>)}
+			</ul>
+		</nav>
+	</div>
+
+	<div class="border-t border-white/10">
+		<div class="max-w-7xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+			<p>© {year} Rozgar Raasta Pakistan. All rights reserved.</p>
+			<p>All opportunities are verified against official sources. Always confirm details on the official website before applying.</p>
+		</div>
+	</div>
+</footer>
+
+<script>
+	const form = document.getElementById('newsletter-form');
+	const msg = document.getElementById('newsletter-msg');
+	form?.addEventListener('submit', (e) => {
+		e.preventDefault();
+		const input = document.getElementById('newsletter-email');
+		const email = (input as HTMLInputElement)?.value.trim() ?? '';
+		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+			if (msg) {
+				msg.textContent = 'Please enter a valid email address.';
+				msg.classList.remove('hidden');
+				msg.classList.add('text-red-400');
+				msg.classList.remove('text-emerald-400');
+			}
+			return;
+		}
+		try {
+			const list = JSON.parse(localStorage.getItem('rrp-newsletter') || '[]');
+			if (!list.includes(email)) list.push(email);
+			localStorage.setItem('rrp-newsletter', JSON.stringify(list));
+		} catch {}
+		if (msg) {
+			msg.textContent = 'Thank you! You are subscribed. We will email you once a week with verified opportunities.';
+			msg.classList.remove('hidden', 'text-red-400');
+			msg.classList.add('text-emerald-400');
+		}
+		(input as HTMLInputElement).value = '';
+	});
+</script>

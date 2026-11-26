@@ -1,0 +1,17 @@
+---
+import CategoryPage from '../components/CategoryPage.astro';
+---
+<CategoryPage
+	title="Student Guides"
+	description="Guides for Pakistani students — scholarships, internships, choosing a career after Matric and Inter, and free courses."
+	intro="You are a student in Pakistan and you want a clear path — what to study, where to get funding, and how to get your first job. These guides answer those questions honestly, with official links."
+	oppCategories={['scholarship', 'internship']}
+	guideCategories={['student']}
+	guideHeading="Student Guides"
+	officialLinks={[
+		{ label: 'Higher Education Commission (HEC)', href: 'https://www.hec.gov.pk/', note: 'Scholarships and higher education in Pakistan.' },
+		{ label: 'DigiSkills', href: 'https://digiskills.pk/', note: 'Free digital skills training.' },
+		{ label: 'Khan Academy', href: 'https://www.khanacademy.org/', note: 'Free courses for school and university students.' },
+		{ label: 'NAVTTC', href: 'https://navttc.gov.pk/', note: 'Free technical and vocational training.' },
+	]}
+/>

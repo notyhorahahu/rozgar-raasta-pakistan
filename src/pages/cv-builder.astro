@@ -1,0 +1,180 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+	title="Free CV Builder"
+	description="Build a professional CV for Pakistani jobs in your browser — free, no sign-up, no data sent anywhere. Fill the form, preview live, then download or print as PDF."
+>
+	<section class="bg-gradient-to-b from-brand-50 to-white border-b border-line">
+		<div class="max-w-7xl mx-auto px-4 py-10 md:py-12">
+			<h1 class="text-3xl md:text-4xl">Free CV Builder</h1>
+			<p class="mt-3 max-w-3xl text-base md:text-lg leading-relaxed">
+				Build a clean, professional CV for Pakistani jobs. Everything happens in your browser — your data is never uploaded or stored. Fill the form, check the live preview, then print or save as PDF.
+			</p>
+		</div>
+	</section>
+
+	<section class="max-w-7xl mx-auto px-4 py-8">
+		<div class="grid gap-8 lg:grid-cols-2">
+			<!-- Form -->
+			<div class="no-print">
+				<h2 class="text-2xl">Your details</h2>
+				<form id="cv-form" class="mt-4 space-y-5" novalidate>
+					<fieldset class="rounded-xl border border-line p-4">
+						<legend class="px-2 text-sm font-bold text-navy-900">Personal Information</legend>
+						<div class="grid gap-3 sm:grid-cols-2">
+							<div>
+								<label for="f-name" class="text-sm font-semibold text-navy-900">Full name *</label>
+								<input id="f-name" type="text" required placeholder="e.g. Ahmed Raza" class="mt-1 w-full rounded-lg border border-line px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600" />
+							</div>
+							<div>
+								<label for="f-title" class="text-sm font-semibold text-navy-900">Professional title</label>
+								<input id="f-title" type="text" placeholder="e.g. Junior Accountant" class="mt-1 w-full rounded-lg border border-line px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600" />
+							</div>
+							<div>
+								<label for="f-phone" class="text-sm font-semibold text-navy-900">Phone</label>
+								<input id="f-phone" type="tel" placeholder="03XX-XXXXXXX" class="mt-1 w-full rounded-lg border border-line px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600" />
+							</div>
+							<div>
+								<label for="f-email" class="text-sm font-semibold text-navy-900">Email</label>
+								<input id="f-email" type="email" placeholder="you@example.com" class="mt-1 w-full rounded-lg border border-line px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600" />
+							</div>
+							<div class="sm:col-span-2">
+								<label for="f-city" class="text-sm font-semibold text-navy-900">City</label>
+								<input id="f-city" type="text" placeholder="e.g. Lahore, Pakistan" class="mt-1 w-full rounded-lg border border-line px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600" />
+							</div>
+							<div class="sm:col-span-2">
+								<label for="f-summary" class="text-sm font-semibold text-navy-900">Professional summary</label>
+								<textarea id="f-summary" rows="3" placeholder="2–3 sentences about your skills and what you are looking for." class="mt-1 w-full rounded-lg border border-line px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600"></textarea>
+							</div>
+						</div>
+					</fieldset>
+
+					<fieldset class="rounded-xl border border-line p-4">
+						<legend class="px-2 text-sm font-bold text-navy-900">Education</legend>
+						<div class="grid gap-3">
+							<div>
+								<label for="f-edu1" class="text-sm font-semibold text-navy-900">Latest qualification</label>
+								<input id="f-edu1" type="text" placeholder="e.g. BBA, University of the Punjab, 2024" class="mt-1 w-full rounded-lg border border-line px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600" />
+							</div>
+							<div>
+								<label for="f-edu2" class="text-sm font-semibold text-navy-900">Previous qualification (optional)</label>
+								<input id="f-edu2" type="text" placeholder="e.g. FSc Pre-Engineering, 2020" class="mt-1 w-full rounded-lg border border-line px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600" />
+							</div>
+						</div>
+					</fieldset>
+
+					<fieldset class="rounded-xl border border-line p-4">
+						<legend class="px-2 text-sm font-bold text-navy-900">Experience</legend>
+						<div class="grid gap-3">
+							<div>
+								<label for="f-exp1" class="text-sm font-semibold text-navy-900">Most recent job / internship</label>
+								<input id="f-exp1" type="text" placeholder="e.g. Sales Intern, ABC Traders, Lahore (2024) — handled customer calls" class="mt-1 w-full rounded-lg border border-line px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600" />
+							</div>
+							<div>
+								<label for="f-exp2" class="text-sm font-semibold text-navy-900">Other experience (optional)</label>
+								<input id="f-exp2" type="text" placeholder="e.g. Freelance graphic designer, Fiverr (2023–present)" class="mt-1 w-full rounded-lg border border-line px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600" />
+							</div>
+						</div>
+					</fieldset>
+
+					<fieldset class="rounded-xl border border-line p-4">
+						<legend class="px-2 text-sm font-bold text-navy-900">Skills</legend>
+						<label for="f-skills" class="text-sm font-semibold text-navy-900">Skills (comma separated)</label>
+						<input id="f-skills" type="text" placeholder="e.g. MS Excel, Urdu & English communication, Canva, data entry" class="mt-1 w-full rounded-lg border border-line px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600" />
+					</fieldset>
+
+					<div class="flex flex-wrap gap-3">
+						<button type="button" id="btn-print" class="rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white hover:bg-brand-700">Download / Print as PDF</button>
+						<button type="button" id="btn-clear" class="rounded-lg border border-line bg-white px-6 py-3 text-sm font-semibold text-navy-900 hover:bg-brand-50">Clear form</button>
+					</div>
+					<p class="text-xs text-muted">Your data stays in your browser. We do not upload, store or share anything you type here. Use your browser's Print → Save as PDF to download.</p>
+				</form>
+			</div>
+
+			<!-- Live preview -->
+			<div>
+				<h2 class="text-2xl no-print">Live preview</h2>
+				<div id="cv-preview" class="mt-4 rounded-xl border border-line bg-white p-6 md:p-8 shadow-sm print:shadow-none print:border-0 print:p-0">
+					<div class="border-b-2 border-navy-900 pb-4">
+						<h3 id="p-name" class="text-2xl md:text-3xl text-navy-900">Your Name</h3>
+						<p id="p-title" class="mt-1 text-base font-semibold text-brand-700">Professional Title</p>
+						<p id="p-contact" class="mt-2 text-sm text-body">City, Pakistan · Phone · Email</p>
+					</div>
+					<div class="mt-5">
+						<h4 class="text-sm font-bold uppercase tracking-wider text-navy-900">Professional Summary</h4>
+						<p id="p-summary" class="mt-1.5 text-sm leading-relaxed">Write 2–3 sentences about your skills and what you are looking for.</p>
+					</div>
+					<div class="mt-5">
+						<h4 class="text-sm font-bold uppercase tracking-wider text-navy-900">Education</h4>
+						<ul id="p-edu" class="mt-1.5 list-disc pl-5 text-sm leading-relaxed">
+							<li>Your latest qualification</li>
+						</ul>
+					</div>
+					<div class="mt-5">
+						<h4 class="text-sm font-bold uppercase tracking-wider text-navy-900">Experience</h4>
+						<ul id="p-exp" class="mt-1.5 list-disc pl-5 text-sm leading-relaxed">
+							<li>Your most recent job or internship</li>
+						</ul>
+					</div>
+					<div class="mt-5">
+						<h4 class="text-sm font-bold uppercase tracking-wider text-navy-900">Skills</h4>
+						<p id="p-skills" class="mt-1.5 text-sm leading-relaxed">Your skills</p>
+					</div>
+				</div>
+				<p class="mt-3 text-sm text-muted no-print">Tip: keep your CV to one page. Remove anything that does not help you get this specific job. Read our <a href="/guides/how-to-write-a-cv-for-pakistani-jobs" class="font-semibold underline">CV writing guide</a> for examples.</p>
+			</div>
+		</div>
+	</section>
+</BaseLayout>
+
+<script>
+	const $ = (id) => document.getElementById(id);
+	const fields = ['f-name', 'f-title', 'f-phone', 'f-email', 'f-city', 'f-summary', 'f-edu1', 'f-edu2', 'f-exp1', 'f-exp2', 'f-skills'];
+
+	function render() {
+		const name = $('f-name').value.trim();
+		const title = $('f-title').value.trim();
+		const phone = $('f-phone').value.trim();
+		const email = $('f-email').value.trim();
+		const city = $('f-city').value.trim();
+		$('p-name').textContent = name || 'Your Name';
+		$('p-title').textContent = title || 'Professional Title';
+		const contact = [city || 'City, Pakistan', phone || 'Phone', email || 'Email'].join(' · ');
+		$('p-contact').textContent = contact;
+		$('p-summary').textContent = $('f-summary').value.trim() || 'Write 2–3 sentences about your skills and what you are looking for.';
+		const edu = [$('f-edu1').value.trim(), $('f-edu2').value.trim()].filter(Boolean);
+		$('p-edu').innerHTML = (edu.length ? edu : ['Your latest qualification']).map((x) => `<li>${escapeHtml(x)}</li>`).join('');
+		const exp = [$('f-exp1').value.trim(), $('f-exp2').value.trim()].filter(Boolean);
+		$('p-exp').innerHTML = (exp.length ? exp : ['Your most recent job or internship']).map((x) => `<li>${escapeHtml(x)}</li>`).join('');
+		$('p-skills').textContent = $('f-skills').value.trim() || 'Your skills';
+	}
+
+	function escapeHtml(s) {
+		return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+	}
+
+	fields.forEach((id) => $(id)?.addEventListener('input', render));
+	$('btn-print')?.addEventListener('click', () => {
+		if (!$('f-name').value.trim()) {
+			alert('Please enter at least your full name before printing.');
+			$('f-name').focus();
+			return;
+		}
+		window.print();
+	});
+	$('btn-clear')?.addEventListener('click', () => {
+		fields.forEach((id) => { const el = $(id); if (el) el.value = ''; });
+		render();
+	});
+	render();
+</script>
+
+<style>
+	@media print {
+		body * { visibility: hidden; }
+		#cv-preview, #cv-preview * { visibility: visible; }
+		#cv-preview { position: absolute; left: 0; top: 0; width: 100%; border: none !important; }
+	}
+</style>

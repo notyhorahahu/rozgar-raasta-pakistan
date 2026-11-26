@@ -1,0 +1,97 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import { getCollection, render } from 'astro:content';
+import { slugOf } from '../../data/guides';
+
+export async function getStaticPaths() {
+	const guides = await getCollection('guides');
+	return guides.map((g) => ({ params: { slug: slugOf(g) }, props: { guide: g } }));
+}
+
+const { guide } = Astro.props;
+const { Content } = await render(guide);
+const { title, description, category, date, updated, author } = guide.data;
+
+const allGuides = (await getCollection('guides'))
+	.filter((g) => slugOf(g) !== slugOf(guide) && (g.data.category === category || g.data.tags.some((t) => guide.data.tags.includes(t))))
+	.sort((a, b) => b.data.updated.valueOf() - a.data.updated.valueOf())
+	.slice(0, 3);
+
+const fmt = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'Article',
+	headline: title,
+	description,
+	author: { '@type': 'Organization', name: author },
+	publisher: { '@type': 'Organization', name: 'Rozgar Raasta Pakistan', logo: { '@type': 'ImageObject', url: 'https://rozgarraasta.pages.dev/logo.svg' } },
+	datePublished: date.toISOString(),
+	dateModified: updated.toISOString(),
+	mainEntityOfPage: { '@type': 'WebPage', '@id': `https://rozgarraasta.pages.dev/guides/${slugOf(guide)}` },
+};
+---
+<BaseLayout
+	title={title}
+	description={description}
+	type="article"
+	publishedTime={date.toISOString()}
+	modifiedTime={updated.toISOString()}
+	jsonLd={jsonLd}
+>
+	<article class="max-w-3xl mx-auto px-4 py-10">
+		<nav aria-label="Breadcrumb" class="text-sm text-muted">
+			<a href="/" class="hover:underline">Home</a> / <a href="/guides" class="hover:underline">Guides</a> / <span class="text-navy-900 capitalize">{category.replace('-', ' ')}</span>
+		</nav>
+		<h1 class="mt-4 text-3xl md:text-4xl leading-tight">{title}</h1>
+		<p class="mt-4 text-lg leading-relaxed text-body">{description}</p>
+		<div class="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-y border-line py-3 text-sm text-muted">
+			<span>By <strong class="text-navy-900">{author}</strong></span>
+			<span>Published <time datetime={date.toISOString()}>{fmt(date)}</time></span>
+			<span>Last verified <time datetime={updated.toISOString()}>{fmt(updated)}</time></span>
+			<span class="rounded-full bg-brand-50 px-2.5 py-1 font-semibold capitalize text-brand-700">{category.replace('-', ' ')}</span>
+		</div>
+		<div class="prose-rrp mt-6">
+			<Content />
+		</div>
+		<div class="mt-10 rounded-xl border border-line bg-brand-50 p-5">
+			<h2 class="text-lg">Share this guide</h2>
+			<p class="mt-1 text-sm text-body">Help someone else find a real opportunity — share the link, not a screenshot.</p>
+			<div class="mt-3 flex flex-wrap gap-2">
+				<a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://rozgarraasta.pages.dev/guides/${slugOf(guide)}`)}`} target="_blank" rel="noopener noreferrer" class="rounded-lg bg-[#1877f2] px-4 py-2 text-sm font-semibold text-white">Share on Facebook</a>
+				<a href={`https://www.reddit.com/submit?url=${encodeURIComponent(`https://rozgarraasta.pages.dev/guides/${slugOf(guide)}`)}&title=${encodeURIComponent(title)}`} target="_blank" rel="noopener noreferrer" class="rounded-lg bg-[#ff4500] px-4 py-2 text-sm font-semibold text-white">Share on Reddit</a>
+				<a href={`https://www.quora.com/share?url=${encodeURIComponent(`https://rozgarraasta.pages.dev/guides/${slugOf(guide)}`)}`} target="_blank" rel="noopener noreferrer" class="rounded-lg bg-[#b92b27] px-4 py-2 text-sm font-semibold text-white">Share on Quora</a>
+				<button id="copy-link" type="button" class="rounded-lg border border-line bg-white px-4 py-2 text-sm font-semibold text-navy-900">Copy link</button>
+			</div>
+			<p id="copy-msg" class="mt-2 hidden text-sm text-emerald-700" role="status">Link copied to clipboard.</p>
+		</div>
+	</article>
+
+	{allGuides.length > 0 && (
+		<section class="max-w-7xl mx-auto px-4 pb-10" aria-label="Related articles">
+			<h2 class="text-2xl md:text-3xl">Related Articles</h2>
+			<div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+				{allGuides.map((g) => <ArticleCard guide={g} />)}
+			</div>
+		</section>
+	)}
+</BaseLayout>
+
+<script>
+	const btn = document.getElementById('copy-link');
+	const msg = document.getElementById('copy-msg');
+	btn?.addEventListener('click', async () => {
+		try {
+			await navigator.clipboard.writeText(window.location.href);
+			msg?.classList.remove('hidden');
+		} catch {
+			const ta = document.createElement('textarea');
+			ta.value = window.location.href;
+			document.body.appendChild(ta);
+			ta.select();
+			document.execCommand('copy');
+			document.body.removeChild(ta);
+			msg?.classList.remove('hidden');
+		}
+	});
+</script>

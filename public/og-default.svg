@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0f2440"/>
+  <rect x="80" y="90" width="120" height="120" rx="24" fill="#2563eb"/>
+  <path d="M130 190 L155 110 L168 110 L148 190 Z" fill="#ffffff"/>
+  <path d="M168 190 L180 140 L193 140 L186 190 Z" fill="#93c5fd"/>
+  <circle cx="155" cy="110" r="6" fill="#ffffff"/>
+  <text x="230" y="150" font-family="Inter, system-ui, sans-serif" font-size="72" font-weight="800" fill="#ffffff">ROZGAR RAASTA</text>
+  <text x="230" y="200" font-family="Inter, system-ui, sans-serif" font-size="44" font-weight="700" fill="#93c5fd" letter-spacing="8">PAKISTAN</text>
+  <text x="80" y="320" font-family="Inter, system-ui, sans-serif" font-size="36" font-weight="600" fill="#e2e8f0">Learn Skills. Find Opportunities. Build Your Future.</text>
+  <text x="80" y="560" font-family="Inter, system-ui, sans-serif" font-size="24" fill="#94a3b8">Verified jobs · Free courses · Scholarships · Freelancing guides</text>
+</svg>

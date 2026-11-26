@@ -1,0 +1,16 @@
+---
+import CategoryPage from '../../components/CategoryPage.astro';
+---
+<CategoryPage
+	title="Private Jobs in Pakistan"
+	description="Verified private-sector jobs in Pakistan — how to find genuine openings, apply safely and avoid job scams."
+	intro="Private jobs across Pakistan's banks, telecom, IT, manufacturing and services sectors. We link only to the employer's own careers page or a trusted official listing — never to a paid middleman."
+	oppCategories={['private']}
+	guideCategories={['career']}
+	guideHeading="Career Guides"
+	officialLinks={[
+		{ label: 'LinkedIn Jobs — Pakistan', href: 'https://www.linkedin.com/jobs/', note: 'Search verified employer postings; apply on the employer site.' },
+		{ label: 'National Job Portal (NJP)', href: 'https://njp.gov.pk/', note: 'Also lists some private-sector openings.' },
+		{ label: 'How to avoid job scams', href: '/guides/how-to-avoid-job-scams-in-pakistan', note: 'Read this before paying anyone for a job.' },
+	]}
+/>
