@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import Analytics from '@vercel/analytics/astro';
 
 interface Props {
 	title: string;
@@ -69,6 +70,7 @@ const defaultJsonLd = {
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 		<script type="application/ld+json" set:html={JSON.stringify(jsonLd ?? defaultJsonLd)} />
+		<Analytics />
 	</head>
 	<body class="min-h-screen flex flex-col">
 		<Header />
