@@ -53,7 +53,7 @@ Based on Google AdSense programme policies and the AdSense help pages:
 | SEO basics | ✅ PASS | Every page has a unique title + meta description + canonical URL; Open Graph + JSON-LD (Organization, WebSite, Article) present. |
 | Site age / traffic | ❌ FAIL | Live since 26 Nov 2026 (0 days). No traffic history, no Search Console data. **This is the main blocker.** |
 | Search Console | ❌ NOT DONE | Property not created, sitemap not submitted, no pages confirmed indexed. Owner must do this from their Google account. |
-| Contact email is real | ✅ PASS | Contact form now uses `mailto:arslanahmad23464@gmail.com` (owner's monitored Gmail), fixed 26 Nov 2026. |
+| Contact email is real | ⚠️ MINOR GAP | Contact form uses `mailto:hello@rozgar-raasta-pakistan.vercel.app`, which is not a real monitored mailbox (vercel.app is not a mail domain). Messages sent there will bounce. Replace with a real monitored email before applying. (Owner put this change on hold 26 Nov 21:35 — do not change until he says so.) |
 | AdSense account + code | ❌ NOT DONE | No AdSense account created, no ad code added. Deliberate — apply only when ready and the owner authorises it. |
 
 ## Gaps to close before applying (in order)

@@ -4,7 +4,7 @@ export const SITE = {
 	url: 'https://rozgar-raasta-pakistan.vercel.app',
 	description:
 		'Rozgar Raasta Pakistan helps Pakistanis find genuine government and private jobs, remote work, freelancing opportunities, free courses, scholarships and internships — with verified official sources.',
-	email: 'arslanahmad23464@gmail.com',
+	email: 'hello@rozgar-raasta-pakistan.vercel.app',
 };
 
 export const GUIDE_CATEGORIES = [
