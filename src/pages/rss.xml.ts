@@ -8,7 +8,7 @@ export const GET: APIRoute = async (context) => {
 	return rss({
 		title: 'Rozgar Raasta Pakistan — Latest Articles',
 		description: 'Learn Skills. Find Opportunities. Build Your Future. Guides, jobs, courses and scholarships for Pakistanis.',
-		site: context.site ?? 'https://rozgarraasta.pages.dev',
+		site: context.site ?? 'https://rozgar-raasta-pakistan.vercel.app',
 		items: guides.map((g) => ({
 			title: g.data.title,
 			description: g.data.description,

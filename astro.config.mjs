@@ -5,7 +5,7 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://rozgarraasta.pages.dev',
+	site: 'https://rozgar-raasta-pakistan.vercel.app',
 	integrations: [
 		sitemap({
 			filter: (page) => !page.includes('/admin'),

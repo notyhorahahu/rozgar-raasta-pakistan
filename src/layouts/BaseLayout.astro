@@ -27,7 +27,7 @@ const {
 	noindex = false,
 } = Astro.props;
 
-const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? 'https://rozgarraasta.pages.dev';
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? 'https://rozgar-raasta-pakistan.vercel.app';
 const canonicalUrl = canonical ?? new URL(Astro.url.pathname, siteUrl).toString();
 const fullTitle = title === 'Rozgar Raasta Pakistan' ? title : `${title} | Rozgar Raasta Pakistan`;
 

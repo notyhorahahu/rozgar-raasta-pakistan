@@ -25,10 +25,10 @@ const jsonLd = {
 	headline: title,
 	description,
 	author: { '@type': 'Organization', name: author },
-	publisher: { '@type': 'Organization', name: 'Rozgar Raasta Pakistan', logo: { '@type': 'ImageObject', url: 'https://rozgarraasta.pages.dev/logo.svg' } },
+	publisher: { '@type': 'Organization', name: 'Rozgar Raasta Pakistan', logo: { '@type': 'ImageObject', url: 'https://rozgar-raasta-pakistan.vercel.app/logo.svg' } },
 	datePublished: date.toISOString(),
 	dateModified: updated.toISOString(),
-	mainEntityOfPage: { '@type': 'WebPage', '@id': `https://rozgarraasta.pages.dev/guides/${slugOf(guide)}` },
+	mainEntityOfPage: { '@type': 'WebPage', '@id': `https://rozgar-raasta-pakistan.vercel.app/guides/${slugOf(guide)}` },
 };
 ---
 <BaseLayout
@@ -58,9 +58,9 @@ const jsonLd = {
 			<h2 class="text-lg">Share this guide</h2>
 			<p class="mt-1 text-sm text-body">Help someone else find a real opportunity — share the link, not a screenshot.</p>
 			<div class="mt-3 flex flex-wrap gap-2">
-				<a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://rozgarraasta.pages.dev/guides/${slugOf(guide)}`)}`} target="_blank" rel="noopener noreferrer" class="rounded-lg bg-[#1877f2] px-4 py-2 text-sm font-semibold text-white">Share on Facebook</a>
-				<a href={`https://www.reddit.com/submit?url=${encodeURIComponent(`https://rozgarraasta.pages.dev/guides/${slugOf(guide)}`)}&title=${encodeURIComponent(title)}`} target="_blank" rel="noopener noreferrer" class="rounded-lg bg-[#ff4500] px-4 py-2 text-sm font-semibold text-white">Share on Reddit</a>
-				<a href={`https://www.quora.com/share?url=${encodeURIComponent(`https://rozgarraasta.pages.dev/guides/${slugOf(guide)}`)}`} target="_blank" rel="noopener noreferrer" class="rounded-lg bg-[#b92b27] px-4 py-2 text-sm font-semibold text-white">Share on Quora</a>
+				<a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://rozgar-raasta-pakistan.vercel.app/guides/${slugOf(guide)}`)}`} target="_blank" rel="noopener noreferrer" class="rounded-lg bg-[#1877f2] px-4 py-2 text-sm font-semibold text-white">Share on Facebook</a>
+				<a href={`https://www.reddit.com/submit?url=${encodeURIComponent(`https://rozgar-raasta-pakistan.vercel.app/guides/${slugOf(guide)}`)}&title=${encodeURIComponent(title)}`} target="_blank" rel="noopener noreferrer" class="rounded-lg bg-[#ff4500] px-4 py-2 text-sm font-semibold text-white">Share on Reddit</a>
+				<a href={`https://www.quora.com/share?url=${encodeURIComponent(`https://rozgar-raasta-pakistan.vercel.app/guides/${slugOf(guide)}`)}`} target="_blank" rel="noopener noreferrer" class="rounded-lg bg-[#b92b27] px-4 py-2 text-sm font-semibold text-white">Share on Quora</a>
 				<button id="copy-link" type="button" class="rounded-lg border border-line bg-white px-4 py-2 text-sm font-semibold text-navy-900">Copy link</button>
 			</div>
 			<p id="copy-msg" class="mt-2 hidden text-sm text-emerald-700" role="status">Link copied to clipboard.</p>

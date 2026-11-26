@@ -1,10 +1,10 @@
 export const SITE = {
 	name: 'Rozgar Raasta Pakistan',
 	tagline: 'Learn Skills. Find Opportunities. Build Your Future.',
-	url: 'https://rozgarraasta.pages.dev',
+	url: 'https://rozgar-raasta-pakistan.vercel.app',
 	description:
 		'Rozgar Raasta Pakistan helps Pakistanis find genuine government and private jobs, remote work, freelancing opportunities, free courses, scholarships and internships — with verified official sources.',
-	email: 'hello@rozgarraasta.pages.dev',
+	email: 'hello@rozgar-raasta-pakistan.vercel.app',
 };
 
 export const GUIDE_CATEGORIES = [

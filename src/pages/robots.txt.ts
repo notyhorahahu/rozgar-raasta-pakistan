@@ -5,7 +5,7 @@ export const GET: APIRoute = () => {
 Allow: /
 Disallow: /admin
 
-Sitemap: https://rozgarraasta.pages.dev/sitemap-index.xml
+Sitemap: https://rozgar-raasta-pakistan.vercel.app/sitemap-index.xml
 `;
 	return new Response(body, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
 };
