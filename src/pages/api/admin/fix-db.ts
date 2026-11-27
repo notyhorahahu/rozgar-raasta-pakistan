@@ -101,6 +101,13 @@ export async function POST({ request }: { request: Request }) {
 		const del = await client.query(
 			`DELETE FROM opportunities WHERE source_url ILIKE '%linkedin.com%'`,
 		);
+		// Stray row from the stale seed: the PPSC-vs-FPSC guide used to
+		// live under the short slug "ppsc-vs-fpsc"; the current slug is
+		// "ppsc-vs-fpsc-which-exam-to-prepare". The upsert below cannot
+		// remove the old row (different slug), so delete it explicitly.
+		const stray = await client.query(
+			`DELETE FROM guides WHERE slug = 'ppsc-vs-fpsc'`,
+		);
 		let upserted = 0;
 		for (const g of guides) {
 			const r = await client.query(GUIDE_UPSERT, GUIDE_COLUMNS.map((c) => (g as any)[c]));
@@ -115,6 +122,7 @@ export async function POST({ request }: { request: Request }) {
 			JSON.stringify({
 				ok: true,
 				linkedinDeleted: del.rowCount,
+				strayGuideDeleted: stray.rowCount,
 				guidesUpserted: upserted,
 				guidesInSource: guides.length,
 				opportunities: Number(counts.rows[0].opportunities),
