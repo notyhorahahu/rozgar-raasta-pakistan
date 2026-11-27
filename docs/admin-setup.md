@@ -182,9 +182,13 @@ parent agent) creates the Neon project; the steps below assume it exists.
    page shows "Admin setup is complete" instead of the form.
    The setup page is not linked from anywhere on the public site, is
    excluded from the sitemap and disallowed in `robots.txt`.
-   **Remove the setup page and endpoint** (`src/pages/admin/setup.astro`
-   and `src/pages/api/admin/setup.ts`) in a follow-up commit once the
-   account is created.
+   **DONE 27 Nov 2026: the owner created the Super Admin account (live
+   /admin/setup returns "Admin setup is complete"), and the setup page +
+   endpoint (`src/pages/admin/setup.astro` and
+   `src/pages/api/admin/setup.ts`) were REMOVED in the Phase 1 security
+   fixes. Do NOT recreate them — new admin accounts are created by an
+   existing Super Admin from inside the admin panel once user management
+   is built (Phase 11).**
 5. **Alternative: create the account with the script** (if the setup page
    cannot be used):
    ```bash

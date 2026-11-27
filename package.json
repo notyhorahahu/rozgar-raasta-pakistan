@@ -18,13 +18,15 @@
     "astro": "^7.4.13",
     "bcryptjs": "^3.0.3",
     "marked": "^18.3.0",
-    "pg": "^8.23.1"
+    "pg": "^8.23.1",
+    "sanitize-html": "^2.18.2"
   },
   "devDependencies": {
     "@astrojs/sitemap": "^3.7.6",
     "@tailwindcss/vite": "^4.3.5",
     "@types/bcryptjs": "^2.4.6",
     "@types/pg": "^8.23.1",
+    "@types/sanitize-html": "^2.16.2",
     "tailwindcss": "^4.3.5"
   }
 }

@@ -72,7 +72,8 @@ const defaultJsonLd = {
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-		<script type="application/ld+json" set:html={JSON.stringify(jsonLd ?? defaultJsonLd)} />
+		{/* JSON-LD: escape '<' as \u003c so a value containing </script> can never break out of this block (JSON.stringify alone does not escape it). */}
+		<script type="application/ld+json" set:html={JSON.stringify(jsonLd ?? defaultJsonLd).replace(/</g, '\\u003c')} />
 		<Analytics />
 	</head>
 	<body class="min-h-screen flex flex-col">

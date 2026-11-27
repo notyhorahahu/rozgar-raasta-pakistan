@@ -17,6 +17,7 @@
 // DB rows carry source: 'database', collection rows source: 'collection'.
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { marked } from 'marked';
+import sanitizeHtml from 'sanitize-html';
 import opportunitiesData from '../data/opportunities.json';
 import { publishedGuides, slugOf, todayPKT } from '../data/guides';
 import type { Opportunity } from '../data/opportunities';
@@ -299,16 +300,21 @@ export async function getDashboardCounts(): Promise<DashboardCounts> {
 
 /**
  * Render a DB guide's Markdown body to HTML. Only admins author guides,
- * but the HTML is still sanitised as a minimum step: <script> blocks,
- * event-handler attributes, javascript: URLs and active embeds are
- * stripped before the HTML reaches the page.
+ * but the HTML is still sanitised with a real HTML sanitiser
+ * (sanitize-html) — the previous regex approach missed vectors such as
+ * xlink:href="javascript:…", formaction, data:text/html, <svg>/<math>
+ * payloads and entity-encoded schemes. sanitize-html strips all of
+ * those and only allows a safe allowlist of tags/attributes.
  */
 export function renderGuideBody(markdown: string): string {
 	const raw = marked.parse(markdown, { async: false }) as string;
-	return raw
-		.replace(/<script[\s\S]*?<\/script\s*>/gi, '')
-		.replace(/<iframe[\s\S]*?<\/iframe\s*>/gi, '')
-		.replace(/<(object|embed|form|style|link|meta|base)[\s\S]*?(?:<\/\1\s*>|\/>|>)/gi, '')
-		.replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
-		.replace(/\s+(href|src)\s*=\s*(?:"javascript:[^"]*"|'javascript:[^']*'|javascript:[^\s>]+)/gi, '');
+	return sanitizeHtml(raw, {
+		allowedTags: sanitizeHtml.defaults.allowedTags.concat(['h1', 'h2', 'img']),
+		allowedAttributes: {
+			a: ['href', 'title'],
+			img: ['src', 'alt', 'title', 'width', 'height'],
+		},
+		allowedSchemes: ['http', 'https', 'mailto'],
+		allowProtocolRelative: false,
+	});
 }
