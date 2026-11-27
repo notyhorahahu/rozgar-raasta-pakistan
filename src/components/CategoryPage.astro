@@ -4,7 +4,9 @@ import ArticleCard from './ArticleCard.astro';
 import OpportunityCard from './OpportunityCard.astro';
 import { getCollection } from 'astro:content';
 import opportunitiesData from '../data/opportunities.json';
-import { effectiveStatus, type Opportunity } from '../data/opportunities';
+import { effectiveStatus, jobPostingsJsonLd, type Opportunity } from '../data/opportunities';
+import { publishedGuides } from '../data/guides';
+import { breadcrumbJsonLd, organizationJsonLd } from '../data/jsonld';
 
 interface OfficialLink {
 	label: string;
@@ -28,12 +30,26 @@ const { title, description, intro, oppCategories, guideCategories, officialLinks
 
 const opps = (opportunitiesData as Opportunity[]).filter((o) => oppCategories.includes(o.category));
 const openOpps = opps.filter((o) => effectiveStatus(o) === 'open');
-const closedOpps = opps.filter((o) => effectiveStatus(o) !== 'open');
-const allGuides = (await getCollection('guides')).sort((a, b) => b.data.updated.valueOf() - a.data.updated.valueOf());
+const closedOpps = opps.filter((o) => effectiveStatus(o) === 'closed');
+const unverifiedOpps = opps.filter((o) => effectiveStatus(o) === 'unverified');
+const allGuides = publishedGuides(
+	(await getCollection('guides')).sort((a, b) => b.data.updated.valueOf() - a.data.updated.valueOf())
+);
 const guides = allGuides.filter((g) => guideCategories.includes(g.data.category));
+
+const siteUrl = 'https://rozgar-raasta-pakistan.vercel.app';
+const pageUrl = `${siteUrl}${Astro.url.pathname}`;
+const jsonLd = [
+	organizationJsonLd(siteUrl),
+	breadcrumbJsonLd([
+		{ name: 'Home', url: `${siteUrl}/` },
+		{ name: title, url: pageUrl },
+	]),
+	...jobPostingsJsonLd(openOpps),
+];
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout title={title} description={description} jsonLd={jsonLd}>
 	<section class="bg-cream hero-grid border-b border-black/10">
 		<div class="max-w-7xl mx-auto px-4 py-10 md:py-12 flex flex-col md:flex-row md:items-center gap-8">
 			<div class="flex-1">
@@ -64,6 +80,15 @@ const guides = allGuides.filter((g) => guideCategories.includes(g.data.category)
 				<summary class="cursor-pointer text-sm font-bold text-ink">Closed / expired listings ({closedOpps.length}) — shown for reference only</summary>
 				<div class="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
 					{closedOpps.map((opp) => <OpportunityCard opp={opp} />)}
+				</div>
+			</details>
+		)}
+
+		{unverifiedOpps.length > 0 && (
+			<details class="mt-8 rounded-md border border-line bg-white p-5">
+				<summary class="cursor-pointer text-sm font-bold text-ink">Unverified listings ({unverifiedOpps.length}) — not yet verified against the official source, shown for reference only</summary>
+				<div class="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+					{unverifiedOpps.map((opp) => <OpportunityCard opp={opp} />)}
 				</div>
 			</details>
 		)}

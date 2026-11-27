@@ -30,8 +30,8 @@ const year = new Date().getFullYear();
 <section class="border-t border-line bg-white" aria-label="Newsletter">
 	<div class="max-w-7xl mx-auto px-4 py-10 grid gap-6 md:grid-cols-2 md:items-center">
 		<div>
-			<h2 class="text-ink text-2xl font-extrabold">Get new opportunities in your inbox</h2>
-			<p class="mt-2 text-sm text-body">One weekly email with verified jobs, scholarships and free courses. No spam, no selling your data. Unsubscribe anytime.</p>
+			<h2 class="text-ink text-2xl font-extrabold">Be first to know about new opportunities</h2>
+			<p class="mt-2 text-sm text-body">Leave your email and we will add email updates soon. For now, your address is saved only on this device — no emails are sent yet. No spam, no selling your data.</p>
 		</div>
 		<form id="newsletter-form" class="flex flex-col sm:flex-row gap-0" novalidate>
 			<label for="newsletter-email" class="sr-only">Email address</label>
@@ -119,7 +119,7 @@ const year = new Date().getFullYear();
 			localStorage.setItem('rrp-newsletter', JSON.stringify(list));
 		} catch {}
 		if (msg) {
-			msg.textContent = 'Thank you! You are subscribed. We will email you once a week with verified opportunities.';
+			msg.textContent = 'Thank you! Your email is saved on this device. We will add email updates soon — for now, no emails are sent.';
 			msg.classList.remove('hidden', 'text-red-600');
 			msg.classList.add('text-emerald-700');
 		}

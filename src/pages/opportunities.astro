@@ -2,11 +2,22 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import OpportunityCard from '../components/OpportunityCard.astro';
 import opportunitiesData from '../data/opportunities.json';
-import { effectiveStatus, type Opportunity } from '../data/opportunities';
+import { effectiveStatus, jobPostingsJsonLd, type Opportunity } from '../data/opportunities';
+import { breadcrumbJsonLd, organizationJsonLd } from '../data/jsonld';
 const opps = opportunitiesData as Opportunity[];
 const openOpps = opps.filter((o) => effectiveStatus(o) === 'open');
+
+const siteUrl = 'https://rozgar-raasta-pakistan.vercel.app';
+const jsonLd = [
+	organizationJsonLd(siteUrl),
+	breadcrumbJsonLd([
+		{ name: 'Home', url: `${siteUrl}/` },
+		{ name: 'Latest Opportunities', url: `${siteUrl}/opportunities` },
+	]),
+	...jobPostingsJsonLd(openOpps),
+];
 ---
-<BaseLayout title="Latest Opportunities" description="All verified jobs, courses, scholarships and internships in Pakistan — checked against official sources.">
+<BaseLayout title="Latest Opportunities" description="All verified jobs, courses, scholarships and internships in Pakistan — checked against official sources." jsonLd={jsonLd}>
 	<section class="bg-cream hero-grid border-b border-black/10">
 		<div class="max-w-7xl mx-auto px-4 py-10 md:py-12">
 			<h1 class="text-3xl md:text-4xl">Latest Opportunities</h1>

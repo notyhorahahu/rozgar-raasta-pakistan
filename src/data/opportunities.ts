@@ -62,3 +62,45 @@ export function effectiveStatus(opp: Opportunity): 'open' | 'closed' | 'unverifi
 	if (opp.status === 'closed' || isExpired(opp)) return 'closed';
 	return opp.status;
 }
+
+/**
+ * JobPosting JSON-LD for ONE opportunity — only for open + verified jobs
+ * and internships. Returns null for closed/unverified records and for
+ * non-job types (courses, scholarships, guides). Only real fields from
+ * the record are used: no datePosted is invented (verifiedDate is the
+ * date we checked the listing, not the date the employer posted it),
+ * and no salary or employment type is claimed where the data has none.
+ */
+export function jobPostingJsonLd(opp: Opportunity): Record<string, unknown> | null {
+	if (effectiveStatus(opp) !== 'open') return null;
+	if (opp.type !== 'job' && opp.type !== 'internship') return null;
+	const orgShort = opp.organization.replace(/\s*\(.*$/, '').replace(/,.*$/, '');
+	const posting: Record<string, unknown> = {
+		'@type': 'JobPosting',
+		title: opp.title,
+		description: opp.eligibility,
+		hiringOrganization: {
+			'@type': 'Organization',
+			name: orgShort,
+		},
+		jobLocation: {
+			'@type': 'Place',
+			address: {
+				'@type': 'PostalAddress',
+				addressLocality: opp.location,
+			},
+		},
+		url: opp.sourceUrl,
+	};
+	if (opp.type === 'internship') posting.employmentType = 'INTERN';
+	if (opp.deadline) posting.validThrough = opp.deadline;
+	return posting;
+}
+
+/** JobPosting JSON-LD for every open + verified job/internship in a list. */
+export function jobPostingsJsonLd(opps: Opportunity[]): Record<string, unknown>[] {
+	return opps
+		.map((o) => jobPostingJsonLd(o))
+		.filter((p): p is Record<string, unknown> => p !== null)
+		.map((p) => ({ '@context': 'https://schema.org', ...p }));
+}

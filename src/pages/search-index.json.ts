@@ -1,12 +1,15 @@
 import { getCollection } from 'astro:content';
 import opportunitiesData from '../data/opportunities.json';
-import { slugOf } from '../data/guides';
+import { slugOf, publishedGuides } from '../data/guides';
+import { effectiveStatus } from '../data/opportunities';
 import type { APIRoute } from 'astro';
 import type { Opportunity } from '../data/opportunities';
 
 export const GET: APIRoute = async () => {
-	const guides = await getCollection('guides');
-	const opps = opportunitiesData as Opportunity[];
+	const guides = publishedGuides(await getCollection('guides'));
+	// Only open + verified opportunities are searchable — closed and
+	// unverified listings are never offered with an Apply button.
+	const opps = (opportunitiesData as Opportunity[]).filter((o) => effectiveStatus(o) === 'open');
 	const items = [
 		...guides.map((g) => ({
 			title: g.data.title,

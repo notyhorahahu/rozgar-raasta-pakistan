@@ -2,10 +2,12 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArticleCard from '../../components/ArticleCard.astro';
 import { getCollection, render } from 'astro:content';
-import { slugOf } from '../../data/guides';
+import { slugOf, publishedGuides } from '../../data/guides';
+import { breadcrumbJsonLd } from '../../data/jsonld';
 
 export async function getStaticPaths() {
-	const guides = await getCollection('guides');
+	// Future-dated guides are not published until their date.
+	const guides = publishedGuides(await getCollection('guides'));
 	return guides.map((g) => ({ params: { slug: slugOf(g) }, props: { guide: g } }));
 }
 
@@ -14,36 +16,43 @@ const { Content } = await render(guide);
 const { title, description, category, date, updated, author, image, imageAlt, video, videoTitle, videoChannel, videoUrl, videoNote } = guide.data;
 const siteUrl = 'https://rozgar-raasta-pakistan.vercel.app';
 
-const allGuides = (await getCollection('guides'))
+const allGuides = publishedGuides(await getCollection('guides'))
 	.filter((g) => slugOf(g) !== slugOf(guide) && (g.data.category === category || g.data.tags.some((t) => guide.data.tags.includes(t))))
 	.sort((a, b) => b.data.updated.valueOf() - a.data.updated.valueOf())
 	.slice(0, 3);
 
 const fmt = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-const jsonLd = {
-	'@context': 'https://schema.org',
-	'@type': 'Article',
-	headline: title,
-	description,
-	author: { '@type': 'Organization', name: author },
-	publisher: { '@type': 'Organization', name: 'Rozgar Raasta Pakistan', logo: { '@type': 'ImageObject', url: 'https://rozgar-raasta-pakistan.vercel.app/logo.svg' } },
-	datePublished: date.toISOString(),
-	dateModified: updated.toISOString(),
-	mainEntityOfPage: { '@type': 'WebPage', '@id': `https://rozgar-raasta-pakistan.vercel.app/guides/${slugOf(guide)}` },
-	...(image ? { image: `${siteUrl}${image}` } : {}),
-	...(video
-		? {
-				video: {
-					'@type': 'VideoObject',
-					name: videoTitle ?? `Watch: ${title}`,
-					description: videoNote ?? description,
-					thumbnailUrl: image ? `${siteUrl}${image}` : `${siteUrl}/og-default.svg`,
-					contentUrl: `${siteUrl}${video}`,
-					uploadDate: date.toISOString().split('T')[0],
-				},
-			}
-		: {}),
-};
+const jsonLd = [
+	{
+		'@context': 'https://schema.org',
+		'@type': 'Article',
+		headline: title,
+		description,
+		author: { '@type': 'Organization', name: author },
+		publisher: { '@type': 'Organization', name: 'Rozgar Raasta Pakistan', logo: { '@type': 'ImageObject', url: 'https://rozgar-raasta-pakistan.vercel.app/logo.svg' } },
+		datePublished: date.toISOString(),
+		dateModified: updated.toISOString(),
+		mainEntityOfPage: { '@type': 'WebPage', '@id': `https://rozgar-raasta-pakistan.vercel.app/guides/${slugOf(guide)}` },
+		...(image ? { image: `${siteUrl}${image}` } : {}),
+		...(video
+			? {
+					video: {
+						'@type': 'VideoObject',
+						name: videoTitle ?? `Watch: ${title}`,
+						description: videoNote ?? description,
+						thumbnailUrl: image ? `${siteUrl}${image}` : `${siteUrl}/og-default.svg`,
+						contentUrl: `${siteUrl}${video}`,
+						uploadDate: date.toISOString().split('T')[0],
+					},
+				}
+			: {}),
+	},
+	breadcrumbJsonLd([
+		{ name: 'Home', url: `${siteUrl}/` },
+		{ name: 'Guides', url: `${siteUrl}/guides` },
+		{ name: title, url: `${siteUrl}/guides/${slugOf(guide)}` },
+	]),
+];
 ---
 <BaseLayout
 	title={title}

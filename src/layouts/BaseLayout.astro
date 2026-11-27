@@ -30,7 +30,10 @@ const {
 
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? 'https://rozgar-raasta-pakistan.vercel.app';
 const canonicalUrl = canonical ?? new URL(Astro.url.pathname, siteUrl).toString();
-const fullTitle = title === 'Rozgar Raasta Pakistan' ? title : `${title} | Rozgar Raasta Pakistan`;
+const fullTitle =
+	title === 'Rozgar Raasta Pakistan'
+		? 'Rozgar Raasta Pakistan — Jobs, Scholarships & Freelancing in Pakistan'
+		: `${title} | Rozgar Raasta Pakistan`;
 
 const defaultJsonLd = {
 	'@context': 'https://schema.org',

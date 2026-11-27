@@ -5,9 +5,10 @@ import OpportunityCard from '../components/OpportunityCard.astro';
 import { getCollection } from 'astro:content';
 import opportunitiesData from '../data/opportunities.json';
 import { effectiveStatus, type Opportunity } from '../data/opportunities';
+import { publishedGuides, slugOf } from '../data/guides';
 
-const allGuides = (await getCollection('guides')).sort(
-	(a, b) => b.data.updated.valueOf() - a.data.updated.valueOf()
+const allGuides = publishedGuides(
+	(await getCollection('guides')).sort((a, b) => b.data.updated.valueOf() - a.data.updated.valueOf())
 );
 const opps = opportunitiesData as Opportunity[];
 const openOpps = opps.filter((o) => effectiveStatus(o) === 'open');
@@ -25,7 +26,19 @@ const scholarships = opps.filter((o) => o.category === 'scholarship').slice(0, 4
 const freelancingGuides = allGuides.filter((g) => g.data.category === 'freelancing').slice(0, 3);
 const aiGuides = allGuides.filter((g) => g.data.category === 'ai-tools').slice(0, 3);
 const latestArticles = allGuides.slice(0, 6);
-const popular = allGuides.filter((g) => g.data.category === 'career' || g.data.category === 'earning').slice(0, 4);
+const latestSlugs = new Set(latestArticles.map((g) => slugOf(g)));
+// Popular Guides come from the `featured` frontmatter field, excluding
+// anything already shown in Latest Articles so no guide appears twice.
+// If fewer than 4 remain, top up with career/earning guides not in Latest.
+const popular = [
+	...allGuides.filter((g) => g.data.featured && !latestSlugs.has(slugOf(g))),
+	...allGuides.filter(
+		(g) =>
+			!g.data.featured &&
+			!latestSlugs.has(slugOf(g)) &&
+			(g.data.category === 'career' || g.data.category === 'earning')
+	),
+].slice(0, 4);
 
 const countFor = (cat: string) => allGuides.filter((g) => g.data.category === cat).length;
 
@@ -51,7 +64,7 @@ const officialSources = [
 const trustSlides = [
 	{
 		quote: 'Every opportunity is verified on the official source before it is listed.',
-		fact: `${opps.length} verified opportunities · ${openOpps.length} currently open`,
+		fact: `${opps.length} opportunities · ${openOpps.length} currently open`,
 	},
 	{
 		quote: 'No fees. No fake jobs. We never ask for CNIC or bank details.',
@@ -130,10 +143,10 @@ const jsonLd = {
 				<div class="shadow-hard mt-4 w-full max-w-[280px] bg-brand-600 p-5 text-white md:absolute md:left-[-24px] md:top-6 md:mt-0 md:w-56">
 					<p class="flex items-center gap-2 text-xs font-bold">
 						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>
-						{opps.length} verified opportunities
+						{opps.length} opportunities
 					</p>
 					<div class="mt-4 flex items-center gap-4">
-						<svg viewBox="0 0 100 100" class="h-24 w-24 shrink-0" role="img" aria-label={`${openPct}% of verified opportunities are currently open`}>
+						<svg viewBox="0 0 100 100" class="h-24 w-24 shrink-0" role="img" aria-label={`${openPct}% of opportunities are currently open`}>
 							<circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="10" />
 							<circle cx="50" cy="50" r="40" fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round" stroke-dasharray={`${(openPct / 100) * 251.33} 251.33`} transform="rotate(-90 50 50)" />
 							<text x="50" y="48" text-anchor="middle" fill="#ffffff" font-size="20" font-weight="800">{openPct}%</text>
@@ -326,7 +339,7 @@ const jsonLd = {
 	<!-- Official sources -->
 	<section class="bg-grey-bg" aria-label="Official sources">
 		<div class="max-w-7xl mx-auto px-4 py-14">
-			<h2 class="text-center text-2xl md:text-3xl">More than <span class="text-brand-600">{opps.length}</span> verified opportunities from official sources</h2>
+			<h2 class="text-center text-2xl md:text-3xl">More than <span class="text-brand-600">{opps.length}</span> opportunities from official sources</h2>
 			<div class="mt-10 grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 lg:grid-cols-4">
 				{officialSources.map((s) => (
 					<a href={s.href} target="_blank" rel="noopener noreferrer" class="group text-center">

@@ -3,8 +3,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ArticleCard from '../components/ArticleCard.astro';
 import { getCollection } from 'astro:content';
 import { GUIDE_CATEGORIES } from '../data/site';
+import { publishedGuides } from '../data/guides';
 
-const allGuides = (await getCollection('guides')).sort((a, b) => b.data.updated.valueOf() - a.data.updated.valueOf());
+const allGuides = publishedGuides(
+	(await getCollection('guides')).sort((a, b) => b.data.updated.valueOf() - a.data.updated.valueOf())
+);
 const counts: Record<string, number> = {};
 for (const g of allGuides) counts[g.data.category] = (counts[g.data.category] ?? 0) + 1;
 ---
