@@ -1,3 +1,9 @@
 node_modules/
 dist/
 .env
+
+# Build outputs (never commit)
+.astro/
+.vercel/
+dist/
+node_modules/
