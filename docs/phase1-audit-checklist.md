@@ -1,5 +1,14 @@
 # Phase 1 Audit Checklist — Internships for Fresh (Rozgar Raasta Pakistan)
 
+> **Historical record (27 Nov 2026).** The admin role hierarchy described
+> in this checklist (`super_admin`, `content_manager`, `editor`, `viewer`,
+> `EDITOR_ROLES` / `DELETE_ROLES`) was **removed on 27 Nov 2026** (owner
+> order: one admin only; migration 003, `db/migrations/003-single-admin.sql`).
+> There is now exactly one admin (`admin`); `public_user` is not an admin.
+> This file is kept as evidence of what the audit found at the time — do
+> not treat its role descriptions as the current system. See
+> `docs/admin-setup.md` §8 for the current state.
+
 - Date: 2026-11-27. Auditor: Phase 1 coordinator + 3 read-only inspection workers.
 - Scope: entire repo at HEAD `f43ad6d` (admin/public separation) + live site.
 - Method: read the actual code (no guessing), ran the build + daily-check, probed the live site with curl. Production Neon NOT touched; no source file modified by this audit.

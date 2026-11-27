@@ -1,9 +1,5 @@
 import type { APIRoute } from 'astro';
-import {
-	EDITOR_ROLES,
-	insertJob,
-	parseJobInput,
-} from '../../../lib/admin-content';
+import { insertJob, parseJobInput } from '../../../lib/admin-content';
 import {
 	getClientIp,
 	jsonError,
@@ -28,10 +24,10 @@ async function readJson(request: Request): Promise<Record<string, unknown>> {
 	}
 }
 
-/** POST /api/admin/jobs — create an opportunity. Editors and above. */
+/** POST /api/admin/jobs — create an opportunity. Admin only. */
 export const POST: APIRoute = async ({ request, cookies }) => {
 	try {
-		const user = await requireAdmin(cookies, EDITOR_ROLES);
+		const user = await requireAdmin(cookies);
 		if (!verifyCsrf(request.headers, cookies)) {
 			return jsonError(403, 'Security check failed. Please reload the page and try again.');
 		}

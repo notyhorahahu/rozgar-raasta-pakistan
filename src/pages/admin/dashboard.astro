@@ -1,24 +1,20 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { query } from '../../lib/db';
-import { ADMIN_ROLES, getAdminUser, getOrSetCsrfToken } from '../../lib/auth';
+import { getAdminUser, getOrSetCsrfToken } from '../../lib/auth';
 import { getDashboardCounts } from '../../lib/content';
 
 // Server-rendered only. Unauthenticated visitors are redirected to
 // /admin/login here in the frontmatter (server-side, never a JS redirect).
 export const prerender = false;
 
-const user = await getAdminUser(Astro.cookies, ADMIN_ROLES);
+const user = await getAdminUser(Astro.cookies);
 if (!user) {
 	return Astro.redirect('/admin/login');
 }
 const csrfToken = getOrSetCsrfToken(Astro.cookies);
 
 // --- Real data from the database -------------------------------------------
-const usersByRole = await query<{ role: string; count: string }>(
-	`SELECT role, count(*) AS count FROM users GROUP BY role ORDER BY count DESC`,
-);
-const totalUsers = usersByRole.rows.reduce((sum, r) => sum + Number(r.count), 0);
 const activeSessions = await query<{ count: string }>(
 	`SELECT count(*) AS count FROM sessions WHERE expires_at > now()`,
 );
@@ -46,8 +42,8 @@ const fmtDate = (iso: string) =>
 	<!-- Real database stats -->
 	<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 		<div class="rounded-lg border border-line bg-white p-5 shadow-sm">
-			<p class="text-3xl font-extrabold text-ink">{totalUsers}</p>
-			<p class="mt-1 text-sm text-muted">Total users (database)</p>
+			<p class="truncate text-3xl font-extrabold text-ink">Admin</p>
+			<p class="mt-1 truncate text-sm text-muted">{user.email}</p>
 		</div>
 		<div class="rounded-lg border border-line bg-white p-5 shadow-sm">
 			<p class="text-3xl font-extrabold text-ink">{Number(activeSessions.rows[0]?.count ?? 0)}</p>
@@ -86,23 +82,6 @@ const fmtDate = (iso: string) =>
 		</div>
 	</section>
 
-	<!-- Users by role -->
-	<section class="mt-6 rounded-lg border border-line bg-white p-6 shadow-sm">
-		<h2 class="text-lg font-extrabold text-ink">Users by role</h2>
-		<p class="mt-1 text-sm text-muted">Real counts from the users table.</p>
-		{usersByRole.rows.length === 0 ? (
-			<p class="mt-4 text-sm">No users yet.</p>
-		) : (
-			<ul class="mt-4 space-y-2 text-sm">
-				{usersByRole.rows.map((r) => (
-					<li class="flex justify-between border-b border-line pb-2">
-						<span class="capitalize">{r.role.replace('_', ' ')}</span>
-						<strong class="text-ink">{Number(r.count)}</strong>
-					</li>
-				))}
-			</ul>
-		)}
-	</section>
 
 	<!-- Recent audit log -->
 	<section class="mt-6 rounded-lg border border-line bg-white p-6 shadow-sm">

@@ -35,8 +35,10 @@ Tables:
 - **`users`** — `id` uuid PK (`gen_random_uuid()`), `email` text (unique
   case-insensitively via an index on `lower(email)`; the app stores
   lower-cased emails), `password_hash` text NOT NULL, `role` text with a
-  CHECK constraint over `super_admin | content_manager | editor | viewer |
-  public_user`, `name`, `created_at` / `updated_at` (auto-maintained by a
+  CHECK constraint over `admin | public_user` (migration 003, 27 Nov 2026:
+  the old role hierarchy `super_admin | content_manager | editor | viewer`
+  was removed — there is exactly one admin), `name`, `created_at` /
+  `updated_at` (auto-maintained by a
   trigger), `last_login_at`, `failed_login_attempts` (default 0),
   `locked_until`, `is_active` (default true).
 - **`sessions`** — `id` uuid PK, `user_id` FK → users (ON DELETE CASCADE),
@@ -95,11 +97,12 @@ Implemented in `src/lib/db.ts` and `src/lib/auth.ts`.
   parameterised — no string-built SQL. No secrets in frontend code.
 - **Failure messages:** a failed login always returns the generic
   "Invalid email or password" — it never reveals whether the email exists.
-- **Roles:** `super_admin` (full access, creates admin accounts),
-  `content_manager`, `editor`, `viewer` (read-only — enforced by the
-  route guards in later milestones), `public_user` (future public
-  accounts; can hold a session but is refused by every admin route
-  with 403).
+- **Roles:** there is exactly ONE admin (`admin` — full access to
+  everything; enforced by `requireAdmin` in `src/lib/auth.ts`). No role
+  hierarchy exists any more (the `super_admin | content_manager |
+  editor | viewer` hierarchy was removed 27 Nov 2026, migration 003).
+  `public_user` (future public accounts) is NOT an admin — it is refused
+  by the login endpoint and by every admin route with 403.
 
 ## 4. Admin URLs
 
@@ -109,11 +112,11 @@ link anywhere on the public website, and the public site has no login UI.
 | URL | What it is |
 |---|---|
 | `/admin` | Server-side redirect → `/admin/login` |
-| `/admin/login` | Admin login page (server-rendered, `prerender = false`). Email + password. States that admin accounts are created by a Super Admin only; no sign-up link. |
+| `/admin/login` | Admin login page (server-rendered, `prerender = false`). Email + password. States there is one admin account; no sign-up link. |
 | `/admin/dashboard` | Dashboard shell (server-rendered, `prerender = false`). Redirects server-side to `/admin/login` when unauthenticated. |
 | `POST /api/admin/login` | Validates input, checks lockout, verifies the bcrypt hash, creates a session, sets the httpOnly cookie, returns the user as JSON. |
 | `POST /api/admin/logout` | Deletes the session, clears the cookie. |
-| `GET /api/admin/me` | Returns the current admin user + role; 401 when unauthenticated, 403 for non-admin roles. |
+| `GET /api/admin/me` | Returns the current admin user; 401 when unauthenticated, 403 for non-admin accounts. |
 
 `robots.txt` disallows `/admin` and the sitemap filter excludes `/admin`
 (both verified still in place). The dashboard sidebar lists all 20
@@ -186,9 +189,11 @@ parent agent) creates the Neon project; the steps below assume it exists.
    /admin/setup returns "Admin setup is complete"), and the setup page +
    endpoint (`src/pages/admin/setup.astro` and
    `src/pages/api/admin/setup.ts`) were REMOVED in the Phase 1 security
-   fixes. Do NOT recreate them — new admin accounts are created by an
-   existing Super Admin from inside the admin panel once user management
-   is built (Phase 11).**
+   fixes. Do NOT recreate them. NOTE (27 Nov 2026, migration 003): the
+   role hierarchy is gone — that account is now the single `admin`
+   (there is no Super Admin any more, and no new admin accounts can be
+   created; if the password is lost, reset it directly in the
+   database).**
 5. **Alternative: create the account with the script** (if the setup page
    cannot be used):
    ```bash
@@ -196,9 +201,9 @@ parent agent) creates the Neon project; the steps below assume it exists.
      DATABASE_URL='<the Neon connection string>' \
      node scripts/create-admin.mjs
    ```
-   The script refuses to run if a Super Admin already exists, and refuses
-   if the env vars are missing. It never prints the password or the
-   connection string.
+   The script refuses to run if an admin already exists (there is only
+   one admin), and refuses if the env vars are missing. It never prints
+   the password or the connection string.
 6. **Log in** at `https://rozgar-raasta-pakistan.vercel.app/admin/login`.
 
 ## 7. Content migration (migration 002)
@@ -322,3 +327,35 @@ added to the public site. The design for the next milestone:
 - Admin pages for the content tables, public signup/login UI,
   newsletter subscriber storage, contact-message storage, 2FA.
 - Any change to the public site's colours, theme or content.
+
+## 8. Single admin (migration 003)
+
+Owner order, 27 Nov 2026: "Ek e admin hona chahiya srf srf ek koi super
+nai koi kuch nai" — there is exactly ONE admin. No Super Admin, no
+Content Manager, no Editor, no Viewer, no role hierarchy at all.
+
+`db/migrations/003-single-admin.sql` (safe to re-run; requires migration
+001 first):
+
+- Migrates every old admin role (`super_admin`, `content_manager`,
+  `editor`, `viewer`) to `admin`. `public_user` is untouched.
+- Drops the old role CHECK and adds `users_role_check CHECK (role IN
+  ('admin', 'public_user'))`.
+- Creates the partial unique index `users_single_admin_idx ON users
+  ((1)) WHERE role = 'admin'`, so a second admin insert fails at the
+  database level.
+
+Apply it the same way as migration 002 — direct Postgres connections
+from the sandbox are BLOCKED, so run it in the Neon SQL Editor in the
+browser (paste the file from
+`https://raw.githubusercontent.com/notyhorahahu/rozgar-raasta-pakistan/main/db/migrations/003-single-admin.sql`),
+then verify with:
+`SELECT role, count(*) FROM users GROUP BY role;` — expect exactly one
+row with role `admin` (plus any `public_user` rows).
+
+Code: `src/lib/auth.ts` (`requireAdmin` / `getAdminUser` accept only
+role `'admin'`; the login endpoint rejects non-admin accounts with the
+generic "Invalid email or password"), `src/lib/admin-content.ts` (no
+role constants any more), all `/api/admin/*` routes and admin pages
+(the single admin can create, edit, publish and delete everything).
+`scripts/create-admin.mjs` refuses if ANY admin already exists.

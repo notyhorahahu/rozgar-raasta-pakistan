@@ -94,7 +94,7 @@ const sections: Section[] = [
 				<div class="border-t border-white/10 px-5 py-4 text-xs leading-relaxed text-white/70">
 					<p class="font-semibold text-white">{user.name ?? user.email}</p>
 					<p>{user.email}</p>
-					<p class="mt-1 capitalize">Role: {user.role.replace('_', ' ')}</p>
+					<p class="mt-1">Admin</p>
 				</div>
 			</aside>
 
@@ -103,7 +103,7 @@ const sections: Section[] = [
 				<header class="flex items-center justify-between gap-3 border-b border-line bg-white px-4 py-3 sm:px-6">
 					<div class="min-w-0">
 						<h1 class="truncate text-xl font-extrabold text-ink sm:text-2xl">{title}</h1>
-						<p class="truncate text-xs text-muted sm:text-sm">{subtitle ?? `Signed in as ${user.email} · ${user.role.replace('_', ' ')}`}</p>
+						<p class="truncate text-xs text-muted sm:text-sm">{subtitle ?? `Signed in as ${user.email} · Admin`}</p>
 					</div>
 					<button
 						id="logout-button"

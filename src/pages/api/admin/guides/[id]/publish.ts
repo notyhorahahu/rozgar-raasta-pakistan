@@ -1,6 +1,5 @@
 import type { APIRoute } from 'astro';
 import { query } from '../../../../../lib/db';
-import { EDITOR_ROLES } from '../../../../../lib/admin-content';
 import {
 	getClientIp,
 	jsonError,
@@ -13,10 +12,10 @@ import {
 export const prerender = false;
 
 /** POST /api/admin/guides/[id]/publish — toggle `published`.
- *  Body: { "published": true | false }. Editors and above. */
+ *  Body: { "published": true | false }. Admin only. */
 export const POST: APIRoute = async ({ request, cookies, params }) => {
 	try {
-		const user = await requireAdmin(cookies, EDITOR_ROLES);
+		const user = await requireAdmin(cookies);
 		if (!verifyCsrf(request.headers, cookies)) {
 			return jsonError(403, 'Security check failed. Please reload the page and try again.');
 		}

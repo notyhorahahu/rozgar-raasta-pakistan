@@ -108,6 +108,14 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 		}
 
 		// Success: reset the counters, record the login, create a session.
+		// Only the single admin (role 'admin') may log in here. A
+		// public_user with the right password is still rejected with the
+		// same generic error, so the response never reveals that the
+		// email has an account.
+		if (user.role !== 'admin') {
+			await logAudit(user.id, 'login_failed', { email, reason: 'not_admin' }, ip);
+			return genericFailure();
+		}
 		await query(
 			`UPDATE users SET failed_login_attempts = 0, locked_until = NULL, last_login_at = now() WHERE id = $1`,
 			[user.id],

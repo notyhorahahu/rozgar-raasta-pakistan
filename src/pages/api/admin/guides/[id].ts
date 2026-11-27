@@ -1,11 +1,6 @@
 import type { APIRoute } from 'astro';
 import { query } from '../../../../lib/db';
-import {
-	DELETE_ROLES,
-	EDITOR_ROLES,
-	parseGuideInput,
-	updateGuide,
-} from '../../../../lib/admin-content';
+import { parseGuideInput, updateGuide } from '../../../../lib/admin-content';
 import {
 	getClientIp,
 	jsonError,
@@ -17,10 +12,10 @@ import {
 
 export const prerender = false;
 
-/** PUT /api/admin/guides/[id] — update a guide. Editors and above. */
+/** PUT /api/admin/guides/[id] — update a guide. Admin only. */
 export const PUT: APIRoute = async ({ request, cookies, params }) => {
 	try {
-		const user = await requireAdmin(cookies, EDITOR_ROLES);
+		const user = await requireAdmin(cookies);
 		if (!verifyCsrf(request.headers, cookies)) {
 			return jsonError(403, 'Security check failed. Please reload the page and try again.');
 		}
@@ -47,10 +42,10 @@ export const PUT: APIRoute = async ({ request, cookies, params }) => {
 	}
 };
 
-/** DELETE /api/admin/guides/[id] — delete a guide. Super Admin + Content Manager only. */
+/** DELETE /api/admin/guides/[id] — delete a guide. Admin only. */
 export const DELETE: APIRoute = async ({ request, cookies, params }) => {
 	try {
-		const user = await requireAdmin(cookies, DELETE_ROLES);
+		const user = await requireAdmin(cookies);
 		if (!verifyCsrf(request.headers, cookies)) {
 			return jsonError(403, 'Security check failed. Please reload the page and try again.');
 		}

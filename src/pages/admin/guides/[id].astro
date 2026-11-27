@@ -2,18 +2,15 @@
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import GuideForm, { type GuideRow } from '../../../components/admin/GuideForm.astro';
 import { query } from '../../../lib/db';
-import { ADMIN_ROLES, getAdminUser, getOrSetCsrfToken } from '../../../lib/auth';
-import { DELETE_ROLES, EDITOR_ROLES } from '../../../lib/admin-content';
+import { getAdminUser, getOrSetCsrfToken } from '../../../lib/auth';
 
 export const prerender = false;
 
-const user = await getAdminUser(Astro.cookies, ADMIN_ROLES);
+const user = await getAdminUser(Astro.cookies);
 if (!user) {
 	return Astro.redirect('/admin/login');
 }
 const csrfToken = getOrSetCsrfToken(Astro.cookies);
-const canEdit = (EDITOR_ROLES as readonly string[]).includes(user.role);
-const canDelete = (DELETE_ROLES as readonly string[]).includes(user.role);
 
 const id = Astro.params.id ?? '';
 const result = await query<GuideRow>(
@@ -35,14 +32,6 @@ if (!guide) {
 			<p class="mt-2 text-sm leading-relaxed text-body">No guide exists with this id. It may have been deleted.</p>
 			<p class="mt-4 text-sm"><a href="/admin/guides" class="font-semibold text-brand-700 hover:underline">← Back to guides</a></p>
 		</div>
-	) : !canEdit ? (
-		<div class="rounded-lg border border-line bg-white p-6 shadow-sm">
-			<h2 class="text-lg font-extrabold text-ink">403 — Forbidden</h2>
-			<p class="mt-2 text-sm leading-relaxed text-body">
-				Your account (Viewer role) has read-only access. You can browse the guides list, but you cannot edit guides.
-			</p>
-			<p class="mt-4 text-sm"><a href="/admin/guides" class="font-semibold text-brand-700 hover:underline">← Back to guides</a></p>
-		</div>
 	) : (
 		<>
 			<p class="mb-4 text-sm text-muted">
@@ -50,7 +39,7 @@ if (!guide) {
 				{' · '}
 				<a href={`/guides/${guide.slug}`} target="_blank" rel="noopener" class="font-semibold text-brand-700 hover:underline">View public page ↗</a>
 			</p>
-			<GuideForm guide={guide} csrfToken={csrfToken} canDelete={canDelete} />
+			<GuideForm guide={guide} csrfToken={csrfToken} />
 		</>
 	)}
 </AdminLayout>

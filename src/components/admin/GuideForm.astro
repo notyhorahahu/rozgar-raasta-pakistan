@@ -22,10 +22,9 @@ export interface GuideRow {
 interface Props {
 	guide?: GuideRow | null;
 	csrfToken: string;
-	canDelete: boolean;
 }
 
-const { guide = null, csrfToken, canDelete } = Astro.props;
+const { guide = null, csrfToken } = Astro.props;
 const isEdit = guide !== null;
 const dstr = (d: string | Date | null): string => {
 	if (!d) return '';
@@ -134,7 +133,7 @@ const sectionCls = 'rounded-lg border border-line bg-white p-6 shadow-sm';
 			{isEdit ? 'Save changes' : 'Create guide'}
 		</button>
 		<a href="/admin/guides" class="rounded-md border border-line bg-white px-5 py-2.5 text-sm font-semibold text-ink hover:bg-brand-50">Cancel</a>
-		{isEdit && canDelete && (
+		{isEdit && (
 			<button id="delete-button" type="button" class="ml-auto rounded-md border border-red-300 bg-red-50 px-5 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-100">
 				Delete
 			</button>

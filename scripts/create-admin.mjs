@@ -1,4 +1,4 @@
-// Create the first Super Admin for Rozgar Raasta Pakistan.
+// Create the one admin for Rozgar Raasta Pakistan.
 //
 // Usage (local testing):
 //   ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD='<strong-password>' \
@@ -9,8 +9,10 @@
 // database, then REMOVE ADMIN_PASSWORD from Vercel env vars.
 //
 // Safety:
-// - Refuses to run if a Super Admin already exists (idempotent — running
+// - Refuses to run if an admin already exists (idempotent — running
 //   it twice cannot create a second one or reset the first password).
+//   There is exactly ONE admin; the database also enforces this with
+//   the users_single_admin_idx partial unique index (migration 003).
 // - Refuses to run if ADMIN_EMAIL / ADMIN_PASSWORD / DATABASE_URL are missing.
 // - Never prints the password or the connection string.
 // - Passwords are hashed with bcrypt, cost factor 12. Minimum length 8.
@@ -48,12 +50,12 @@ const pool = new pg.Pool({
 
 try {
 	const existing = await pool.query(
-		`SELECT id, email FROM users WHERE role = 'super_admin' LIMIT 1`,
+		`SELECT id, email FROM users WHERE role = 'admin' LIMIT 1`,
 	);
 	if (existing.rows.length > 0) {
 		console.error(
-			`ERROR: a Super Admin already exists (${existing.rows[0].email}). Refusing to create another one. ` +
-				'If the password is lost, a Super Admin must reset it from inside the panel.',
+			`ERROR: an admin already exists (${existing.rows[0].email}). Refusing to create another one — there is only one admin. ` +
+				'If the password is lost, reset it directly in the database (UPDATE users SET password_hash = ... WHERE role = \'admin\').',
 		);
 		process.exit(1);
 	}
@@ -61,15 +63,15 @@ try {
 	const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 12);
 	const created = await pool.query(
 		`INSERT INTO users (email, password_hash, role, name)
-		 VALUES ($1, $2, 'super_admin', $3)
+		 VALUES ($1, $2, 'admin', $3)
 		 RETURNING id, email, role, created_at`,
-		[email, passwordHash, 'Super Admin'],
+		[email, passwordHash, 'Admin'],
 	);
 	const row = created.rows[0];
-	console.log(`Super Admin created: ${row.email} (role: ${row.role}, id: ${row.id})`);
+	console.log(`Admin created: ${row.email} (role: ${row.role}, id: ${row.id})`);
 	console.log('Log in at /admin/login. Remember to remove ADMIN_PASSWORD from the environment afterwards.');
 } catch (err) {
-	console.error('ERROR: failed to create the Super Admin:', err.message);
+	console.error('ERROR: failed to create the admin:', err.message);
 	process.exit(1);
 } finally {
 	await pool.end();

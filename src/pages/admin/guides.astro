@@ -1,18 +1,16 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { query } from '../../lib/db';
-import { ADMIN_ROLES, getAdminUser, getOrSetCsrfToken } from '../../lib/auth';
-import { DELETE_ROLES, EDITOR_ROLES, GUIDE_CATEGORIES } from '../../lib/admin-content';
+import { getAdminUser, getOrSetCsrfToken } from '../../lib/auth';
+import { GUIDE_CATEGORIES } from '../../lib/admin-content';
 
 export const prerender = false;
 
-const user = await getAdminUser(Astro.cookies, ADMIN_ROLES);
+const user = await getAdminUser(Astro.cookies);
 if (!user) {
 	return Astro.redirect('/admin/login');
 }
 const csrfToken = getOrSetCsrfToken(Astro.cookies);
-const canMutate = (EDITOR_ROLES as readonly string[]).includes(user.role);
-const canDelete = (DELETE_ROLES as readonly string[]).includes(user.role);
 
 const params = Astro.url.searchParams;
 const q = params.get('q')?.trim() ?? '';
@@ -76,11 +74,7 @@ const fmtDate = (d: string) =>
 	{flash && (
 		<p class="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800" role="status">{flash}</p>
 	)}
-	{!canMutate && (
-		<p class="mb-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800" role="note">
-			You have read-only access (Viewer role). You can browse and search, but you cannot create, edit, publish or delete guides.
-		</p>
-	)}
+
 
 	<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 		<div class="rounded-lg border border-line bg-white p-4 shadow-sm"><p class="text-2xl font-extrabold text-ink">{Number(counts.rows[0]?.total ?? 0)}</p><p class="mt-1 text-sm text-muted">Total guides</p></div>
@@ -109,9 +103,7 @@ const fmtDate = (d: string) =>
 				<a href="/admin/guides" class="rounded-md border border-line bg-white px-4 py-2 text-sm font-semibold text-ink hover:bg-brand-50">Clear</a>
 			)}
 		</form>
-		{canMutate && (
-			<a href="/admin/guides/new" class="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">+ New guide</a>
-		)}
+		<a href="/admin/guides/new" class="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">+ New guide</a>
 	</div>
 
 	<section class="mt-4 overflow-x-auto rounded-lg border border-line bg-white shadow-sm">
@@ -141,10 +133,7 @@ const fmtDate = (d: string) =>
 							<td class="whitespace-nowrap px-4 py-3">{r.featured ? 'Yes' : 'No'}</td>
 							<td class="whitespace-nowrap px-4 py-3">
 								<div class="flex items-center gap-2">
-									{canMutate && (
 										<a href={`/admin/guides/${r.id}`} class="font-semibold text-brand-700 hover:underline">Edit</a>
-									)}
-									{canMutate && (
 										<button
 											type="button"
 											class="publish-btn font-semibold text-brand-700 hover:underline"
@@ -153,12 +142,9 @@ const fmtDate = (d: string) =>
 										>
 											{r.published ? 'Unpublish' : 'Publish'}
 										</button>
-									)}
-									{canDelete && (
 										<button type="button" class="delete-btn font-semibold text-red-700 hover:underline" data-id={r.id} data-title={r.title}>
 											Delete
 										</button>
-									)}
 									{r.published && (
 										<a href={`/guides/${r.slug}`} target="_blank" rel="noopener" class="font-semibold text-muted hover:underline">View ↗</a>
 									)}

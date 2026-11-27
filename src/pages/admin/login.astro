@@ -19,7 +19,7 @@ const error = Astro.url.searchParams.get('error');
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="robots" content="noindex, nofollow" />
 		<title>Admin Login | Rozgar Raasta Pakistan</title>
-		<meta name="description" content="Admin login for Rozgar Raasta Pakistan. Admin accounts are created by a Super Admin only." />
+		<meta name="description" content="Admin login for Rozgar Raasta Pakistan. There is one admin account — there is no public registration." />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -37,7 +37,7 @@ const error = Astro.url.searchParams.get('error');
 
 			<div class="mt-8 rounded-lg border border-line bg-white p-6 shadow-sm sm:p-8">
 				<h1 class="text-2xl font-extrabold text-ink">Admin login</h1>
-				<p class="mt-1 text-sm text-muted">Sign in to manage the website. Admin accounts are created by a Super Admin only — there is no public registration.</p>
+				<p class="mt-1 text-sm text-muted">Sign in to manage the website. There is one admin account — there is no public registration.</p>
 
 				{error === 'forbidden' && (
 					<p class="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
@@ -83,7 +83,7 @@ const error = Astro.url.searchParams.get('error');
 				</form>
 
 				<p class="mt-5 text-center text-xs leading-relaxed text-muted">
-					Admin accounts are created by a Super Admin only.<br />
+					There is one admin account.<br />
 					No sign-up link exists. Locked out after 5 failed attempts for 15 minutes.
 				</p>
 			</div>

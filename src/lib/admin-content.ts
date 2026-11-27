@@ -31,9 +31,6 @@ export const GUIDE_CATEGORIES = [
 	'ai-tools',
 ] as const;
 
-export const EDITOR_ROLES = ['super_admin', 'content_manager', 'editor'] as const;
-export const DELETE_ROLES = ['super_admin', 'content_manager'] as const;
-
 export interface JobInput {
 	title: string;
 	company: string;

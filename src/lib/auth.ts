@@ -11,9 +11,14 @@ import { query } from './db';
 //   SHA-256 hex hash is stored in sessions.token_hash; the raw token
 //   lives in the httpOnly cookie `rrp_admin_session`. Sessions last
 //   7 days and expiry is enforced server-side (expired rows are
-//   rejected and deleted). The same session system serves admin roles
-//   and the future `public_user` role — the next milestone does not
-//   rebuild auth.
+//   rejected and deleted). The same session system serves the single
+//   admin and the future `public_user` role — the next milestone does
+//   not rebuild auth.
+// - There is exactly ONE admin (role 'admin'). There is no role
+//   hierarchy: no Super Admin, no Content Manager, no Editor, no
+//   Viewer (removed 27 Nov 2026, migration 003). The single admin can
+//   do everything. `public_user` is reserved for future candidate
+//   accounts and is NOT an admin — it is rejected from /admin/*.
 // - CSRF: double-submit cookie pattern. A random token is issued in
 //   the `rrp_admin_csrf` cookie (readable by page JS, SameSite=Lax)
 //   and must be sent back in the `x-csrf-token` header on every
@@ -37,9 +42,9 @@ export const LOCKOUT_MINUTES = 15;
 export const BCRYPT_COST = 12;
 export const MIN_PASSWORD_LENGTH = 8;
 
-export const ADMIN_ROLES = ['super_admin', 'content_manager', 'editor', 'viewer'] as const;
-export type AdminRole = (typeof ADMIN_ROLES)[number];
-export type Role = AdminRole | 'public_user';
+/** The one and only admin role. There is no role hierarchy. */
+export const ADMIN_ROLE = 'admin';
+export type Role = 'admin' | 'public_user';
 
 export interface AdminUser {
 	id: string;
@@ -185,29 +190,24 @@ export class HttpError extends Error {
 /**
  * Guard for protected admin API routes and pages.
  * 401 when there is no / invalid / expired session (or the account is
- * inactive); 403 when the user's role is not in `allowedRoles`.
+ * inactive); 403 when the user is not the single admin (role 'admin').
+ * A `public_user` account is never an admin and is always rejected.
  * Throws HttpError — API routes catch it and return the JSON error.
  */
-export async function requireAdmin(
-	cookies: CookieLike,
-	allowedRoles: readonly string[] = ADMIN_ROLES,
-): Promise<AdminUser> {
+export async function requireAdmin(cookies: CookieLike): Promise<AdminUser> {
 	const user = await getSessionUser(cookies);
 	if (!user) throw new HttpError(401, 'Unauthenticated. Please log in.');
-	if (!allowedRoles.includes(user.role)) {
-		throw new HttpError(403, 'Forbidden. Your account does not have access to the admin panel.');
+	if (user.role !== ADMIN_ROLE) {
+		throw new HttpError(403, 'Forbidden. This account does not have access to the admin panel.');
 	}
 	return user;
 }
 
 /** Same as requireAdmin but returns null instead of throwing — for pages
  *  that redirect to /admin/login when unauthenticated. */
-export async function getAdminUser(
-	cookies: CookieLike,
-	allowedRoles: readonly string[] = ADMIN_ROLES,
-): Promise<AdminUser | null> {
+export async function getAdminUser(cookies: CookieLike): Promise<AdminUser | null> {
 	try {
-		return await requireAdmin(cookies, allowedRoles);
+		return await requireAdmin(cookies);
 	} catch {
 		return null;
 	}

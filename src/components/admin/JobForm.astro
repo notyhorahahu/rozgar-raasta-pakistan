@@ -32,10 +32,9 @@ export interface JobRow {
 interface Props {
 	job?: JobRow | null;
 	csrfToken: string;
-	canDelete: boolean;
 }
 
-const { job = null, csrfToken, canDelete } = Astro.props;
+const { job = null, csrfToken } = Astro.props;
 const isEdit = job !== null;
 const dstr = (d: string | Date | null): string => {
 	if (!d) return '';
@@ -189,7 +188,7 @@ const sectionCls = 'rounded-lg border border-line bg-white p-6 shadow-sm';
 			{isEdit ? 'Save changes' : 'Create opportunity'}
 		</button>
 		<a href="/admin/jobs" class="rounded-md border border-line bg-white px-5 py-2.5 text-sm font-semibold text-ink hover:bg-brand-50">Cancel</a>
-		{isEdit && canDelete && (
+		{isEdit && (
 			<button id="delete-button" type="button" class="ml-auto rounded-md border border-red-300 bg-red-50 px-5 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-100">
 				Delete
 			</button>

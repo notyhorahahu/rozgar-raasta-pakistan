@@ -1,11 +1,6 @@
 import type { APIRoute } from 'astro';
 import { query } from '../../../../lib/db';
-import {
-	DELETE_ROLES,
-	EDITOR_ROLES,
-	parseJobInput,
-	updateJob,
-} from '../../../../lib/admin-content';
+import { parseJobInput, updateJob } from '../../../../lib/admin-content';
 import {
 	getClientIp,
 	jsonError,
@@ -27,10 +22,10 @@ async function readJson(request: Request): Promise<Record<string, unknown>> {
 	}
 }
 
-/** PUT /api/admin/jobs/[id] — update an opportunity. Editors and above. */
+/** PUT /api/admin/jobs/[id] — update an opportunity. Admin only. */
 export const PUT: APIRoute = async ({ request, cookies, params }) => {
 	try {
-		const user = await requireAdmin(cookies, EDITOR_ROLES);
+		const user = await requireAdmin(cookies);
 		if (!verifyCsrf(request.headers, cookies)) {
 			return jsonError(403, 'Security check failed. Please reload the page and try again.');
 		}
@@ -58,10 +53,10 @@ export const PUT: APIRoute = async ({ request, cookies, params }) => {
 	}
 };
 
-/** DELETE /api/admin/jobs/[id] — delete an opportunity. Super Admin + Content Manager only. */
+/** DELETE /api/admin/jobs/[id] — delete an opportunity. Admin only. */
 export const DELETE: APIRoute = async ({ request, cookies, params }) => {
 	try {
-		const user = await requireAdmin(cookies, DELETE_ROLES);
+		const user = await requireAdmin(cookies);
 		if (!verifyCsrf(request.headers, cookies)) {
 			return jsonError(403, 'Security check failed. Please reload the page and try again.');
 		}
