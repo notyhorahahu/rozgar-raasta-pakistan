@@ -16,6 +16,41 @@ export const prerender = false;
 
 const ONE_TIME_KEY = '33a4476905c75b673ae71b0676b7a3c42ac76d7402729c29';
 
+// Migration 003 (single admin) embedded — the db/ folder is not in the
+// Vercel serverless bundle, so the file cannot be read at runtime.
+// Idempotent: safe to re-run. Drops the old role CHECK, migrates every
+// old admin role to 'admin', tightens the CHECK to admin|public_user,
+// and adds the partial unique index that enforces at most one admin.
+const MIGRATION_003 = `
+ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check;
+DO $$
+DECLARE
+	r record;
+BEGIN
+	FOR r IN
+		SELECT conname FROM pg_constraint
+		WHERE conrelid = 'users'::regclass AND contype = 'c'
+			AND pg_get_constraintdef(oid) LIKE '%super_admin%'
+	LOOP
+		EXECUTE 'ALTER TABLE users DROP CONSTRAINT ' || quote_ident(r.conname);
+	END LOOP;
+END $$;
+UPDATE users SET role = 'admin'
+WHERE role IN ('super_admin', 'content_manager', 'editor', 'viewer');
+DO $$
+BEGIN
+	IF NOT EXISTS (
+		SELECT 1 FROM pg_constraint
+		WHERE conname = 'users_role_check' AND conrelid = 'users'::regclass
+	) THEN
+		ALTER TABLE users ADD CONSTRAINT users_role_check
+			CHECK (role IN ('admin', 'public_user'));
+	END IF;
+END $$;
+CREATE UNIQUE INDEX IF NOT EXISTS users_single_admin_idx
+	ON users ((1)) WHERE role = 'admin';
+`;
+
 const GUIDE_COLUMNS = [
 	'slug', 'title', 'description', 'category', 'tags', 'body', 'featured',
 	'published', 'publish_date', 'seo_title', 'seo_description', 'author',
@@ -98,6 +133,13 @@ export async function POST({ request }: { request: Request }) {
 	const client = await pool.connect();
 	try {
 		await client.query('BEGIN');
+		// Migration 003: single admin. The deployed code now accepts only
+		// role='admin', but the production user still has 'super_admin' —
+		// without this the admin cannot log in at all.
+		const migrated = await client.query(MIGRATION_003);
+		const adminRows = await client.query<{ email: string; role: string }>(
+			`SELECT email, role FROM users WHERE role = 'admin'`,
+		);
 		const del = await client.query(
 			`DELETE FROM opportunities WHERE source_url ILIKE '%linkedin.com%'`,
 		);
@@ -121,6 +163,8 @@ export async function POST({ request }: { request: Request }) {
 		return new Response(
 			JSON.stringify({
 				ok: true,
+				migration003: 'applied',
+				adminAccounts: adminRows.rows,
 				linkedinDeleted: del.rowCount,
 				strayGuideDeleted: stray.rowCount,
 				guidesUpserted: upserted,
