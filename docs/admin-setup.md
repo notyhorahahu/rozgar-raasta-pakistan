@@ -158,17 +158,36 @@ parent agent) creates the Neon project; the steps below assume it exists.
 
 1. **Create the Neon project** (browser task — done by the parent agent).
    Use the free tier. Copy the **pooled** connection string.
-2. **Set Vercel env vars** (project → Settings → Environment Variables,
-   Production):
-   - `DATABASE_URL` = the Neon pooled connection string.
-   - `ADMIN_EMAIL` = the first Super Admin's email (one-time init only).
-   - `ADMIN_PASSWORD` = a strong password, 8+ characters (one-time init only).
+2. **Set the Vercel env var** (project → Settings → Environment Variables,
+   Production): `DATABASE_URL` = the Neon pooled connection string.
 3. **Run the migration against Neon** (from any machine with `psql`):
    ```bash
    psql "$DATABASE_URL" -f db/migrations/001-init.sql
    ```
    Replace `$DATABASE_URL` with the Neon connection string for that command.
-4. **Create the first Super Admin** (once):
+4. **Create the first Super Admin — one-time setup page** (recommended):
+   open `https://rozgar-raasta-pakistan.vercel.app/admin/setup`, enter the
+   email + password (8+ characters, twice) and submit. The page creates the
+   account through `POST /api/admin/setup`, which:
+   - refuses with 403 if ANY Super Admin already exists (checked before
+     the request body is read, and again atomically in the insert, so it
+     can only ever create one account);
+   - validates the email format and the 8-character minimum;
+   - rate-limits the endpoint like the login endpoint (5 attempts per
+     email per 15 minutes, then a 15-minute lockout);
+   - hashes the password with bcrypt (cost 12) and writes an `admin_setup`
+     row to `audit_logs`;
+   - never returns the password or its hash.
+   After success the page shows "Admin account created — you can now log
+   in" with a link to `/admin/login`. If a Super Admin already exists the
+   page shows "Admin setup is complete" instead of the form.
+   The setup page is not linked from anywhere on the public site, is
+   excluded from the sitemap and disallowed in `robots.txt`.
+   **Remove the setup page and endpoint** (`src/pages/admin/setup.astro`
+   and `src/pages/api/admin/setup.ts`) in a follow-up commit once the
+   account is created.
+5. **Alternative: create the account with the script** (if the setup page
+   cannot be used):
    ```bash
    ADMIN_EMAIL='<the email>' ADMIN_PASSWORD='<the password>' \
      DATABASE_URL='<the Neon connection string>' \
@@ -177,9 +196,6 @@ parent agent) creates the Neon project; the steps below assume it exists.
    The script refuses to run if a Super Admin already exists, and refuses
    if the env vars are missing. It never prints the password or the
    connection string.
-5. **Remove `ADMIN_PASSWORD` from the Vercel env vars** immediately after
-   step 4 (keep `DATABASE_URL`; `ADMIN_EMAIL` can also be removed). Then
-   redeploy if the env vars changed after the last deploy.
 6. **Log in** at `https://rozgar-raasta-pakistan.vercel.app/admin/login`.
 
 ## 7. Public user accounts — design only (next milestone)
