@@ -1,0 +1,86 @@
+import { t as __exportAll } from "./rolldown-runtime_D3KUYPsf.mjs";
+import { h as renderHead, o as renderComponent, p as renderTemplate, s as Fragment, x as defineScriptVars } from "./server_D5ItN1nv.mjs";
+import { t as createComponent } from "./astro-component_DL7iB5yq.mjs";
+import { t as createAstro } from "./compiler_CFsG9cGQ.mjs";
+/* empty css                 */
+import { d as getOrSetCsrfToken } from "./auth_B63A6JLM.mjs";
+import { t as query } from "./db_DDXrkiRw.mjs";
+// src/pages/admin/setup.astro
+var setup_exports = /* @__PURE__ */ __exportAll({
+	default: () => $$Setup,
+	file: () => $$file,
+	prerender: () => false,
+	url: () => $$url
+});
+createAstro("https://rozgar-raasta-pakistan.vercel.app");
+var $$Setup = createComponent(async ($$result, $$props, $$slots) => {
+	const Astro = $$result.createAstro($$props, $$slots);
+	Astro.self = $$Setup;
+	let alreadySetUp = false;
+	try {
+		alreadySetUp = (await query(`SELECT id FROM users WHERE role = 'super_admin' LIMIT 1`)).rows.length > 0;
+	} catch {
+		alreadySetUp = false;
+	}
+	const csrfToken = alreadySetUp ? "" : getOrSetCsrfToken(Astro.cookies);
+	return renderTemplate`<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="robots" content="noindex, nofollow"><title>Admin Setup | Rozgar Raasta Pakistan</title><meta name="description" content="One-time setup: create the first Super Admin account for Rozgar Raasta Pakistan."><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">${renderHead($$result)}</head><body class="min-h-screen bg-cream font-sans text-body antialiased"><main class="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-4 py-10"><div class="text-center"><div class="inline-flex items-center gap-2"><img src="/logo-mark.svg" alt="Rozgar Raasta Pakistan logo" class="h-10 w-10"><span class="text-lg font-extrabold tracking-tight text-ink">Rozgar Raasta Pakistan</span></div><p class="mt-1 text-xs font-semibold uppercase tracking-widest text-brand-600">Admin Panel</p></div><div class="mt-8 rounded-lg border border-line bg-white p-6 shadow-sm sm:p-8">${alreadySetUp ? renderTemplate`${renderComponent($$result, "Fragment", Fragment, {}, { "default": ($$result) => renderTemplate`<h1 class="text-2xl font-extrabold text-ink">Admin setup is complete</h1><p class="mt-2 text-sm leading-relaxed text-muted">The first Super Admin account already exists. This setup page only works once and cannot create another one.</p><a href="/admin/login" class="mt-6 block w-full rounded-md bg-brand-600 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-brand-700">Go to admin login</a>` })}` : renderTemplate`${renderComponent($$result, "Fragment", Fragment, {}, { "default": ($$result) => renderTemplate`<h1 class="text-2xl font-extrabold text-ink">Create the first admin</h1><p class="mt-1 text-sm text-muted">One-time setup. Enter the email and password for the first Super Admin account.</p><p class="mt-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">This page only works once — after the first Super Admin is created it stops working.</p><p id="form-error" class="mt-4 hidden rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p><p id="form-success" class="mt-4 hidden rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700" role="status"></p><form id="setup-form" class="mt-6 space-y-4" novalidate><div><label for="email" class="block text-sm font-semibold text-ink">Email</label><input id="email" name="email" type="email" required autocomplete="username" placeholder="you@example.com" class="mt-1 w-full rounded-md border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-100"></div><div><label for="password" class="block text-sm font-semibold text-ink">Password</label><input id="password" name="password" type="password" required minlength="8" autocomplete="new-password" placeholder="At least 8 characters" class="mt-1 w-full rounded-md border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-100"></div><div><label for="confirm-password" class="block text-sm font-semibold text-ink">Confirm password</label><input id="confirm-password" name="confirm-password" type="password" required minlength="8" autocomplete="new-password" placeholder="Repeat the password" class="mt-1 w-full rounded-md border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-100"></div><button id="setup-button" type="submit" class="w-full rounded-md bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60">Create Super Admin</button></form><p class="mt-5 text-center text-xs leading-relaxed text-muted">Your password is hashed with bcrypt before it is stored.<br>It is never shown to anyone and never sent anywhere else.</p>` })}`}</div></main>${!alreadySetUp && renderTemplate`<script>(function(){${defineScriptVars({ csrfToken })}
+				const form = document.getElementById('setup-form');
+				const errorBox = document.getElementById('form-error');
+				const successBox = document.getElementById('form-success');
+				const button = document.getElementById('setup-button');
+				const showError = (msg) => {
+					successBox.classList.add('hidden');
+					errorBox.textContent = msg;
+					errorBox.classList.remove('hidden');
+				};
+				form.addEventListener('submit', async (event) => {
+					event.preventDefault();
+					errorBox.classList.add('hidden');
+					successBox.classList.add('hidden');
+					const email = document.getElementById('email').value.trim();
+					const password = document.getElementById('password').value;
+					const confirm = document.getElementById('confirm-password').value;
+					if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$/.test(email)) {
+						showError('Enter a valid email address.');
+						return;
+					}
+					if (password.length < 8) {
+						showError('Password must be at least 8 characters.');
+						return;
+					}
+					if (password !== confirm) {
+						showError('The two passwords do not match.');
+						return;
+					}
+					button.disabled = true;
+					button.textContent = 'Creating admin…';
+					try {
+						const res = await fetch('/api/admin/setup', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrfToken },
+							body: JSON.stringify({ email, password }),
+						});
+						const data = await res.json().catch(() => ({}));
+						if (!res.ok) {
+							showError(data.error || 'Setup failed. Please try again.');
+							button.disabled = false;
+							button.textContent = 'Create Super Admin';
+							return;
+						}
+						form.classList.add('hidden');
+						successBox.innerHTML =
+							'Admin account created — you can now <a href="/admin/login" class="font-semibold underline">log in</a>.';
+						successBox.classList.remove('hidden');
+					} catch {
+						showError('Could not reach the server. Please try again.');
+						button.disabled = false;
+						button.textContent = 'Create Super Admin';
+					}
+				});
+			})();<\/script>`}</body></html>`;
+}, "/home/hatch/workspace/coding/projects/rozgar-raasta-pakistan/src/pages/admin/setup.astro", void 0);
+var $$file = "/home/hatch/workspace/coding/projects/rozgar-raasta-pakistan/src/pages/admin/setup.astro";
+var $$url = "/admin/setup";
+// \0virtual:astro:page:src/pages/admin/setup@_@astro
+var page = () => setup_exports;
+export { page };

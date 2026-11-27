@@ -28,10 +28,10 @@ const error = Astro.url.searchParams.get('error');
 	<body class="min-h-screen bg-cream font-sans text-body antialiased">
 		<main class="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-4 py-10">
 			<div class="text-center">
-				<a href="/" class="inline-flex items-center gap-2">
+				<div class="inline-flex items-center gap-2">
 					<img src="/logo-mark.svg" alt="Rozgar Raasta Pakistan logo" class="h-10 w-10" />
 					<span class="text-lg font-extrabold tracking-tight text-ink">Rozgar Raasta Pakistan</span>
-				</a>
+				</div>
 				<p class="mt-1 text-xs font-semibold uppercase tracking-widest text-brand-600">Admin Panel</p>
 			</div>
 
@@ -87,10 +87,6 @@ const error = Astro.url.searchParams.get('error');
 					No sign-up link exists. Locked out after 5 failed attempts for 15 minutes.
 				</p>
 			</div>
-
-			<p class="mt-6 text-center text-xs text-muted">
-				<a href="/" class="font-semibold text-brand-600 hover:underline">← Back to the public website</a>
-			</p>
 		</main>
 
 		<script define:vars={{ csrfToken }}>

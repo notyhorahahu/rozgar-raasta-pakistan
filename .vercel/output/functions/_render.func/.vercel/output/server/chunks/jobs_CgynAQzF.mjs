@@ -1,0 +1,135 @@
+import { t as __exportAll } from "./rolldown-runtime_D3KUYPsf.mjs";
+import { b as addAttribute, m as maybeRenderHead, o as renderComponent, p as renderTemplate, x as defineScriptVars } from "./server_D5ItN1nv.mjs";
+import { t as createComponent } from "./astro-component_DL7iB5yq.mjs";
+import { t as createAstro } from "./compiler_CFsG9cGQ.mjs";
+import { t as $$AdminLayout } from "./AdminLayout_ocTkUVmf.mjs";
+import { t as query } from "./db_DDXrkiRw.mjs";
+import { d as getOrSetCsrfToken, l as getAdminUser, t as ADMIN_ROLES } from "./auth_B63A6JLM.mjs";
+import { i as JOB_TYPES, n as EDITOR_ROLES, t as DELETE_ROLES } from "./admin-content_D7UgU4LZ.mjs";
+import { t as CATEGORY_LABELS } from "./opportunities_n667ADNq.mjs";
+// src/pages/admin/jobs.astro
+var jobs_exports = /* @__PURE__ */ __exportAll({
+	default: () => $$Jobs,
+	file: () => $$file,
+	prerender: () => false,
+	url: () => $$url
+});
+createAstro("https://rozgar-raasta-pakistan.vercel.app");
+var $$Jobs = createComponent(async ($$result, $$props, $$slots) => {
+	const Astro = $$result.createAstro($$props, $$slots);
+	Astro.self = $$Jobs;
+	const user = await getAdminUser(Astro.cookies, ADMIN_ROLES);
+	if (!user) return Astro.redirect("/admin/login");
+	const csrfToken = getOrSetCsrfToken(Astro.cookies);
+	const canMutate = EDITOR_ROLES.includes(user.role);
+	const canDelete = DELETE_ROLES.includes(user.role);
+	const params = Astro.url.searchParams;
+	const q = params.get("q")?.trim() ?? "";
+	const category = params.get("category") ?? "";
+	const status = params.get("status") ?? "";
+	const verification = params.get("verification") ?? "";
+	const flash = params.get("created") ? "Opportunity created." : params.get("updated") ? "Opportunity updated." : params.get("deleted") ? "Opportunity deleted." : null;
+	const counts = await query(`SELECT count(*) AS total,
+		count(*) FILTER (WHERE status = 'open') AS open_c,
+		count(*) FILTER (WHERE status = 'closed') AS closed_c,
+		count(*) FILTER (WHERE status = 'unverified') AS unverified_c,
+		count(*) FILTER (WHERE published) AS published_c
+	 FROM opportunities`);
+	const conditions = [];
+	const values = [];
+	if (q) {
+		values.push(`%${q}%`);
+		conditions.push(`(title ILIKE $${values.length} OR company ILIKE $${values.length})`);
+	}
+	if (category && JOB_TYPES.includes(category)) {
+		values.push(category);
+		conditions.push(`category = $${values.length}`);
+	}
+	if (status && [
+		"open",
+		"closed",
+		"unverified"
+	].includes(status)) {
+		values.push(status);
+		conditions.push(`status = $${values.length}`);
+	}
+	if (verification && [
+		"verified",
+		"pending",
+		"unverified"
+	].includes(verification)) {
+		values.push(verification);
+		conditions.push(`verification_status = $${values.length}`);
+	}
+	const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+	const rows = await query(`SELECT id, title, company, category, location, deadline, status,
+		verification_status, published
+	 FROM opportunities ${where} ORDER BY created_at DESC`, values);
+	const current = category ? {
+		government: "government-jobs",
+		private: "private-jobs",
+		remote: "remote-jobs",
+		scholarship: "scholarships",
+		course: "free-courses",
+		internship: "internships",
+		"ai-tools": "ai-tools"
+	}[category] ?? null : null;
+	const fmtDeadline = (d) => d ? (/* @__PURE__ */ new Date(`${d}T00:00:00`)).toLocaleDateString("en-GB", {
+		day: "numeric",
+		month: "short",
+		year: "numeric"
+	}) : "—";
+	return renderTemplate`${renderComponent($$result, "AdminLayout", $$AdminLayout, {
+		"user": user,
+		"csrfToken": csrfToken,
+		"title": "Manage Opportunities",
+		"current": current
+	}, { "default": async ($$result) => renderTemplate`${flash && renderTemplate`${maybeRenderHead($$result)}<p class="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800" role="status">${flash}</p>`}${!canMutate && renderTemplate`<p class="mb-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800" role="note">You have read-only access (Viewer role). You can browse and search, but you cannot create, edit, publish or delete opportunities.</p>`}<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5"><div class="rounded-lg border border-line bg-white p-4 shadow-sm"><p class="text-2xl font-extrabold text-ink">${Number(counts.rows[0]?.total ?? 0)}</p><p class="mt-1 text-sm text-muted">Total</p></div><div class="rounded-lg border border-line bg-white p-4 shadow-sm"><p class="text-2xl font-extrabold text-ink">${Number(counts.rows[0]?.open_c ?? 0)}</p><p class="mt-1 text-sm text-muted">Open</p></div><div class="rounded-lg border border-line bg-white p-4 shadow-sm"><p class="text-2xl font-extrabold text-ink">${Number(counts.rows[0]?.closed_c ?? 0)}</p><p class="mt-1 text-sm text-muted">Closed</p></div><div class="rounded-lg border border-line bg-white p-4 shadow-sm"><p class="text-2xl font-extrabold text-ink">${Number(counts.rows[0]?.unverified_c ?? 0)}</p><p class="mt-1 text-sm text-muted">Unverified</p></div><div class="rounded-lg border border-line bg-white p-4 shadow-sm"><p class="text-2xl font-extrabold text-ink">${Number(counts.rows[0]?.published_c ?? 0)}</p><p class="mt-1 text-sm text-muted">Published</p></div></div><div class="mt-6 flex flex-wrap items-center justify-between gap-3"><form method="get" action="/admin/jobs" class="flex flex-wrap items-center gap-2" role="search"><label for="q" class="sr-only">Search by title or company</label><input id="q" name="q" type="search"${addAttribute(q, "value")} placeholder="Search title or company…" class="w-56 rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-100"><label for="category" class="sr-only">Category</label><select id="category" name="category" class="rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none focus:border-brand-600"><option value="">All categories</option>${JOB_TYPES.map((t) => renderTemplate`<option${addAttribute(t, "value")}${addAttribute(category === t, "selected")}>${CATEGORY_LABELS[t]}</option>`)}</select><label for="status" class="sr-only">Status</label><select id="status" name="status" class="rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none focus:border-brand-600"><option value="">All statuses</option><option value="open"${addAttribute(status === "open", "selected")}>Open</option><option value="closed"${addAttribute(status === "closed", "selected")}>Closed</option><option value="unverified"${addAttribute(status === "unverified", "selected")}>Unverified</option></select><label for="verification" class="sr-only">Verification</label><select id="verification" name="verification" class="rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none focus:border-brand-600"><option value="">All verification</option><option value="verified"${addAttribute(verification === "verified", "selected")}>Verified</option><option value="pending"${addAttribute(verification === "pending", "selected")}>Pending</option><option value="unverified"${addAttribute(verification === "unverified", "selected")}>Unverified</option></select><button type="submit" class="rounded-md bg-ink px-4 py-2 text-sm font-semibold text-white hover:bg-black">Filter</button>${(q || category || status || verification) && renderTemplate`<a href="/admin/jobs" class="rounded-md border border-line bg-white px-4 py-2 text-sm font-semibold text-ink hover:bg-brand-50">Clear</a>`}</form>${canMutate && renderTemplate`<a href="/admin/jobs/new" class="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">+ New opportunity</a>`}</div><section class="mt-4 overflow-x-auto rounded-lg border border-line bg-white shadow-sm">${rows.rows.length === 0 ? renderTemplate`<p class="p-6 text-sm">No opportunities match these filters.</p>` : renderTemplate`<table class="w-full min-w-[900px] text-left text-sm"><thead><tr class="border-b border-line text-xs uppercase tracking-wide text-muted"><th class="px-4 py-3">Title</th><th class="px-4 py-3">Company</th><th class="px-4 py-3">Category</th><th class="px-4 py-3">Location</th><th class="px-4 py-3">Deadline</th><th class="px-4 py-3">Status</th><th class="px-4 py-3">Verification</th><th class="px-4 py-3">Published</th><th class="px-4 py-3">Actions</th></tr></thead><tbody>${rows.rows.map((r) => renderTemplate`<tr class="border-b border-line last:border-0 hover:bg-brand-50/40"><td class="max-w-[280px] px-4 py-3 font-medium text-ink">${r.title}</td><td class="max-w-[180px] truncate px-4 py-3">${r.company}</td><td class="whitespace-nowrap px-4 py-3">${CATEGORY_LABELS[r.category] ?? r.category}</td><td class="max-w-[160px] truncate px-4 py-3">${r.location}</td><td class="whitespace-nowrap px-4 py-3">${fmtDeadline(r.deadline)}</td><td class="whitespace-nowrap px-4 py-3 capitalize">${r.status}</td><td class="whitespace-nowrap px-4 py-3 capitalize">${r.verification_status}</td><td class="whitespace-nowrap px-4 py-3">${r.published ? "Yes" : "No"}</td><td class="whitespace-nowrap px-4 py-3"><div class="flex items-center gap-2">${canMutate && renderTemplate`<a${addAttribute(`/admin/jobs/${r.id}`, "href")} class="font-semibold text-brand-700 hover:underline">Edit</a>`}${canMutate && renderTemplate`<button type="button" class="publish-btn font-semibold text-brand-700 hover:underline"${addAttribute(r.id, "data-id")}${addAttribute(String(r.published), "data-published")}>${r.published ? "Unpublish" : "Publish"}</button>`}${canDelete && renderTemplate`<button type="button" class="delete-btn font-semibold text-red-700 hover:underline"${addAttribute(r.id, "data-id")}${addAttribute(r.title, "data-title")}>Delete</button>`}</div></td></tr>`)}</tbody></table>`}</section><p class="mt-3 text-sm text-muted">${rows.rows.length} shown.</p><script>(function(){${defineScriptVars({ csrfToken })}
+		const errorAlert = (msg) => alert(msg);
+		document.querySelectorAll('.publish-btn').forEach((btn) => {
+			btn.addEventListener('click', async () => {
+				const id = btn.getAttribute('data-id');
+				const currently = btn.getAttribute('data-published') === 'true';
+				btn.disabled = true;
+				try {
+					const res = await fetch(\`/api/admin/jobs/\${id}/publish\`, {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrfToken },
+						body: JSON.stringify({ published: !currently }),
+					});
+					const data = await res.json().catch(() => ({}));
+					if (!res.ok) { errorAlert(data.error || 'Could not change publish state.'); btn.disabled = false; return; }
+					window.location.reload();
+				} catch {
+					errorAlert('Could not reach the server.');
+					btn.disabled = false;
+				}
+			});
+		});
+		document.querySelectorAll('.delete-btn').forEach((btn) => {
+			btn.addEventListener('click', async () => {
+				const id = btn.getAttribute('data-id');
+				const title = btn.getAttribute('data-title') ?? 'this opportunity';
+				if (!window.confirm(\`Delete "\${title}"? This cannot be undone.\`)) return;
+				btn.disabled = true;
+				try {
+					const res = await fetch(\`/api/admin/jobs/\${id}\`, {
+						method: 'DELETE',
+						headers: { 'x-csrf-token': csrfToken },
+					});
+					const data = await res.json().catch(() => ({}));
+					if (!res.ok) { errorAlert(data.error || 'Could not delete.'); btn.disabled = false; return; }
+					window.location.href = '/admin/jobs?deleted=1';
+				} catch {
+					errorAlert('Could not reach the server.');
+					btn.disabled = false;
+				}
+			});
+		});
+	})();<\/script>` })}`;
+}, "/home/hatch/workspace/coding/projects/rozgar-raasta-pakistan/src/pages/admin/jobs.astro", void 0);
+var $$file = "/home/hatch/workspace/coding/projects/rozgar-raasta-pakistan/src/pages/admin/jobs.astro";
+var $$url = "/admin/jobs";
+// \0virtual:astro:page:src/pages/admin/jobs@_@astro
+var page = () => jobs_exports;
+export { page };

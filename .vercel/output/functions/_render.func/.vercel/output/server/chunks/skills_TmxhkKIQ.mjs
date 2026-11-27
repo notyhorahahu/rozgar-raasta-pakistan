@@ -1,0 +1,66 @@
+import { t as __exportAll } from "./rolldown-runtime_D3KUYPsf.mjs";
+import { o as renderComponent, p as renderTemplate } from "./server_D5ItN1nv.mjs";
+import { t as createComponent } from "./astro-component_DL7iB5yq.mjs";
+import "./compiler_CFsG9cGQ.mjs";
+import { t as $$CategoryPage } from "./CategoryPage_BJMpxYJG.mjs";
+// src/pages/skills.astro
+var skills_exports = /* @__PURE__ */ __exportAll({
+	default: () => $$Skills,
+	file: () => $$file,
+	prerender: () => false,
+	url: () => $$url
+});
+var $$Skills = createComponent(($$result, $$props, $$slots) => {
+	return renderTemplate`${renderComponent($$result, "CategoryPage", $$CategoryPage, {
+		"heroImage": "/images/cat-skills.jpg",
+		"heroImageAlt": "A young Pakistani student learning a new skill on a laptop at home",
+		"title": "Skills and Free Courses",
+		"description": "Free and affordable professional courses for Pakistanis — DigiSkills, NAVTTC, Coursera, Google Skillshop, Microsoft Learn, freeCodeCamp and Khan Academy.",
+		"intro": "Build a job-ready skill for free. These are real courses from real providers — we verify whether each course is actually free, whether the certificate costs extra, and whether enrolment is open.",
+		"oppCategories": ["course"],
+		"guideCategories": ["skills"],
+		"guideHeading": "Skills Guides",
+		"officialLinks": [
+			{
+				label: "DigiSkills",
+				href: "https://digiskills.pk/",
+				note: "Free freelancing and digital skills training."
+			},
+			{
+				label: "NAVTTC",
+				href: "https://navttc.gov.pk/",
+				note: "Free technical and vocational training."
+			},
+			{
+				label: "Coursera",
+				href: "https://www.coursera.org/",
+				note: "University courses; many are free to audit, certificates usually paid."
+			},
+			{
+				label: "Google Skillshop",
+				href: "https://skillshop.withgoogle.com/",
+				note: "Free Google product and digital marketing training."
+			},
+			{
+				label: "Microsoft Learn",
+				href: "https://learn.microsoft.com/",
+				note: "Free learning paths for Microsoft technologies."
+			},
+			{
+				label: "freeCodeCamp",
+				href: "https://www.freecodecamp.org/",
+				note: "Free coding certifications."
+			},
+			{
+				label: "Khan Academy",
+				href: "https://www.khanacademy.org/",
+				note: "Free courses in maths, science, computing and more."
+			}
+		]
+	})}`;
+}, "/home/hatch/workspace/coding/projects/rozgar-raasta-pakistan/src/pages/skills.astro", void 0);
+var $$file = "/home/hatch/workspace/coding/projects/rozgar-raasta-pakistan/src/pages/skills.astro";
+var $$url = "/skills";
+// \0virtual:astro:page:src/pages/skills@_@astro
+var page = () => skills_exports;
+export { page };
