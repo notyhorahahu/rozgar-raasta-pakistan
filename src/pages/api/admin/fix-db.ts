@@ -46,6 +46,17 @@ function dateStr(d: unknown): string {
 	return String(d).slice(0, 10);
 }
 
+export async function GET({ url }: { url: URL }) {
+	if (url.searchParams.get('key') !== ONE_TIME_KEY) {
+		return new Response(JSON.stringify({ ok: false, error: 'forbidden' }), { status: 403 });
+	}
+	const pool = getPool();
+	const rows = await pool.query<{ slug: string; title: string; published: boolean; publish_date: string }>(
+		`SELECT slug, title, published, publish_date::text AS publish_date FROM guides ORDER BY slug`,
+	);
+	return new Response(JSON.stringify({ ok: true, count: rows.rows.length, guides: rows.rows }), { status: 200 });
+}
+
 export async function POST({ request }: { request: Request }) {
 	let body: any = {};
 	try {
