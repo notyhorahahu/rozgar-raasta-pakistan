@@ -1,9 +1,8 @@
 # Admin Setup — Rozgar Raasta Pakistan (Phases 2–4, foundation milestone)
 
 Foundation only: database + authentication + admin login + dashboard shell.
-The 19 content-management sections are **not** built yet — they come in the
-next milestone with the content tables (jobs, scholarships, articles,
-subscribers, messages).
+The 19 content-management sections are **not** built yet — they come in
+the next milestone, on top of the content tables added in section 7.
 
 ## 1. Database choice
 
@@ -57,8 +56,8 @@ Tables:
   window, then a 15-minute lockout), so the endpoint behaves identically
   for real and fake emails.
 
-No content tables (jobs / scholarships / articles / subscribers /
-messages) are created in this milestone — those come next.
+Content tables (`opportunities`, `guides`) are in migration 002 — see
+section 7. Subscriber / message tables are not created yet.
 
 ## 3. Auth design
 
@@ -198,7 +197,97 @@ parent agent) creates the Neon project; the steps below assume it exists.
    connection string.
 6. **Log in** at `https://rozgar-raasta-pakistan.vercel.app/admin/login`.
 
-## 7. Public user accounts — design only (next milestone)
+## 7. Content migration (migration 002)
+
+Content tables live in `db/migrations/002-content.sql` (safe to re-run;
+requires migration 001 first — it uses the `users` table and the
+`set_updated_at()` trigger function). The tables are seeded from the
+file sources of truth by `scripts/migrate-content.mjs`:
+
+- **`opportunities`** — one row per record in
+  `src/data/opportunities.json` (40). Columns: `title`, `company` (from
+  JSON `organization`), `department`, `location`, `province`,
+  `education`, `qualification`, `experience`, `salary`, `job_type` and
+  `category` (both from JSON `category`), `type` (from JSON `type` —
+  a separate column because type and category do not map 1:1, e.g. 3
+  records are type `guide`), `status` (`open`/`closed`/`unverified`),
+  `verification_status` (mapped from JSON status: `unverified` →
+  `unverified`, `open`/`closed` → `verified`), `deadline`,
+  `source_url`, `source_domain` (hostname of `source_url`),
+  `description` (= `eligibility`, the descriptive text),
+  `eligibility`, `procedure`, `fees`, `verified_date`, `required_documents`,
+  `published`, `created_at` / `updated_at` (auto-maintained by a
+  trigger), `created_by` (FK → users, nullable). Indexes on `category`,
+  `status`, `verification_status`, `deadline`, `job_type`, plus a
+  unique index on `(title, company)` — the dedupe key for the seed
+  script. The nullable columns with no source data (`department`,
+  `province`, `education`, `qualification`, `experience`, `salary`,
+  `required_documents`) are NULL for all 40 rows: nothing was invented.
+- **`guides`** — one row per file in `src/content/guides/*.md` (32).
+  Columns: `slug` (UNIQUE, from the filename), `title`,
+  `description`, `category`, `tags` (`text[]`), `body` (the full
+  Markdown after the frontmatter block), `featured`, `published`,
+  `publish_date`, `seo_title` / `seo_description` (= title /
+  description), `author`, `image` / `image_alt` (from frontmatter;
+  only 10 of the 32 guides have one — the rest are NULL),
+  `created_at` (from frontmatter `date`) / `updated_at` (from
+  frontmatter `updated`), `created_by` (FK → users, nullable).
+  `published` follows the PKT date gate in `src/data/guides.ts`
+  (`isPublished`: date <= today in Asia/Karachi): the 6 guides dated
+  28 Nov–3 Dec 2026 are inserted with `published = false`; the 27 Nov
+  guide and all earlier ones get `published = true`.
+
+### Local (testing) — run directly
+
+```bash
+psql "$DATABASE_URL" -f db/migrations/002-content.sql   # apply twice to prove it re-runs cleanly
+node --env-file=.env scripts/migrate-content.mjs        # seeds 40 opportunities + 32 guides
+node --env-file=.env scripts/migrate-content.mjs        # second run: 0 inserted (idempotent)
+```
+
+The script uses `INSERT ... ON CONFLICT DO NOTHING` on both tables
+(opportunities on `(title, company)`, guides on `slug`), runs all
+inserts in one transaction (any failure rolls everything back and
+exits non-zero), validates every record first (unknown category/type/
+status, bad dates/URLs, missing required fields — any error aborts
+before inserting anything), and prints how many rows were inserted
+vs skipped. Verified locally 27 Nov 2026: migration applies cleanly
+twice; first run inserts 40 + 32, second run inserts 0; field-by-field
+spot checks pass for 3 jobs + 2 guides; the 6 future-dated guides have
+`published = false`, the 27 Nov guide `published = true`.
+
+### Production (Neon) — via the Neon SQL Editor (browser task)
+
+Direct Postgres connections (port 5432) from this sandbox to Neon are
+**blocked by the network egress**, so nothing here can run against
+Neon directly — do not try `psql` or the script with the Neon
+`DATABASE_URL` from this machine. The Neon path is:
+
+1. Generate the seed SQL (this does **not** touch any database):
+   ```bash
+   node scripts/migrate-content.mjs --print-sql --sql-file /tmp/migrate-content.sql
+   ```
+   This prints/writes the same 72 `INSERT ... ON CONFLICT DO NOTHING`
+   statements the script would run (40 opportunities + 32 guides),
+   with values escaped as SQL literals. Note the PKT date gate is
+   evaluated when the file is generated — generate it on the day you
+   apply it, so `published` matches that day's date.
+2. In the Neon dashboard, open the **SQL Editor** for the
+   `rozgar-raasta-pakistan` project and run, in this order:
+   a. the full contents of `db/migrations/002-content.sql` (migration
+      001 must already have run — it has, on 27 Nov 2026);
+   b. the full contents of the generated `/tmp/migrate-content.sql`.
+3. Verify in the SQL Editor:
+   ```sql
+   SELECT (SELECT count(*) FROM opportunities) AS opportunities,
+          (SELECT count(*) FROM guides) AS guides,
+          (SELECT count(*) FROM guides WHERE published = false) AS unpublished;
+   ```
+   Expected: 40 opportunities, 32 guides, 6 unpublished (the guides
+   dated 28 Nov–3 Dec 2026). Re-running either file must change
+   nothing (0 new rows).
+
+## 8. Public user accounts — design only (next milestone)
 
 No public login / sign-up UI is built in this milestone, and none was
 added to the public site. The design for the next milestone:
@@ -223,9 +312,9 @@ added to the public site. The design for the next milestone:
   application history) are designed with the content tables in the next
   milestone.
 
-## 8. What is NOT in this milestone
+## 9. What is NOT in this milestone
 
 - The 19 content-management sections (placeholder only).
-- Content tables, public signup/login UI, newsletter subscriber storage,
-  contact-message storage, 2FA.
+- Admin pages for the content tables, public signup/login UI,
+  newsletter subscriber storage, contact-message storage, 2FA.
 - Any change to the public site's colours, theme or content.
