@@ -95,7 +95,10 @@ function collectRoutes(dist) {
 
 function checkLinks() {
   console.log('\n[3] Broken internal links in dist/');
-  const dist = join(ROOT, 'dist');
+  // With the @astrojs/vercel adapter, static output lives in dist/client/
+  // (dist/ itself only holds client/ + server/). Without an adapter it is
+  // dist/ directly. Prefer dist/client when it exists.
+  const dist = existsSync(join(ROOT, 'dist', 'client')) ? join(ROOT, 'dist', 'client') : join(ROOT, 'dist');
   if (!existsSync(dist)) { fail('dist/ does not exist — run the build first'); return; }
   const { routes, assets } = collectRoutes(dist);
   const broken = [];

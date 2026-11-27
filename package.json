@@ -13,12 +13,17 @@
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",
+    "@astrojs/vercel": "^11.0.22",
     "@vercel/analytics": "^2.0.1",
-    "astro": "^7.4.13"
+    "astro": "^7.4.13",
+    "bcryptjs": "^3.0.3",
+    "pg": "^8.23.1"
   },
   "devDependencies": {
     "@astrojs/sitemap": "^3.7.6",
     "@tailwindcss/vite": "^4.3.5",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/pg": "^8.23.1",
     "tailwindcss": "^4.3.5"
   }
 }

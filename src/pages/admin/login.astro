@@ -1,0 +1,134 @@
+---
+import '../../styles/global.css';
+import { getOrSetCsrfToken } from '../../lib/auth';
+
+// Server-rendered only (never prerendered): the CSRF token is issued
+// here and the form posts to /api/admin/login, which sets the httpOnly
+// session cookie and the page then redirects server-side via JS
+// navigation to /admin/dashboard.
+export const prerender = false;
+
+const csrfToken = getOrSetCsrfToken(Astro.cookies);
+const error = Astro.url.searchParams.get('error');
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="robots" content="noindex, nofollow" />
+		<title>Admin Login | Rozgar Raasta Pakistan</title>
+		<meta name="description" content="Admin login for Rozgar Raasta Pakistan. Admin accounts are created by a Super Admin only." />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+	</head>
+	<body class="min-h-screen bg-cream font-sans text-body antialiased">
+		<main class="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-4 py-10">
+			<div class="text-center">
+				<a href="/" class="inline-flex items-center gap-2">
+					<img src="/logo-mark.svg" alt="Rozgar Raasta Pakistan logo" class="h-10 w-10" />
+					<span class="text-lg font-extrabold tracking-tight text-ink">Rozgar Raasta Pakistan</span>
+				</a>
+				<p class="mt-1 text-xs font-semibold uppercase tracking-widest text-brand-600">Admin Panel</p>
+			</div>
+
+			<div class="mt-8 rounded-lg border border-line bg-white p-6 shadow-sm sm:p-8">
+				<h1 class="text-2xl font-extrabold text-ink">Admin login</h1>
+				<p class="mt-1 text-sm text-muted">Sign in to manage the website. Admin accounts are created by a Super Admin only — there is no public registration.</p>
+
+				{error === 'forbidden' && (
+					<p class="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+						Your account does not have access to the admin panel.
+					</p>
+				)}
+
+				<p id="form-error" class="mt-4 hidden rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
+
+				<form id="login-form" class="mt-6 space-y-4" novalidate>
+					<div>
+						<label for="email" class="block text-sm font-semibold text-ink">Email</label>
+						<input
+							id="email"
+							name="email"
+							type="email"
+							required
+							autocomplete="username"
+							placeholder="you@example.com"
+							class="mt-1 w-full rounded-md border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
+						/>
+					</div>
+					<div>
+						<label for="password" class="block text-sm font-semibold text-ink">Password</label>
+						<input
+							id="password"
+							name="password"
+							type="password"
+							required
+							minlength="8"
+							autocomplete="current-password"
+							placeholder="Your password"
+							class="mt-1 w-full rounded-md border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
+						/>
+					</div>
+					<button
+						id="login-button"
+						type="submit"
+						class="w-full rounded-md bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
+					>
+						Log in
+					</button>
+				</form>
+
+				<p class="mt-5 text-center text-xs leading-relaxed text-muted">
+					Admin accounts are created by a Super Admin only.<br />
+					No sign-up link exists. Locked out after 5 failed attempts for 15 minutes.
+				</p>
+			</div>
+
+			<p class="mt-6 text-center text-xs text-muted">
+				<a href="/" class="font-semibold text-brand-600 hover:underline">← Back to the public website</a>
+			</p>
+		</main>
+
+		<script define:vars={{ csrfToken }}>
+			const form = document.getElementById('login-form');
+			const errorBox = document.getElementById('form-error');
+			const button = document.getElementById('login-button');
+			form.addEventListener('submit', async (event) => {
+				event.preventDefault();
+				errorBox.classList.add('hidden');
+				errorBox.textContent = '';
+				button.disabled = true;
+				button.textContent = 'Logging in…';
+				const email = document.getElementById('email').value.trim();
+				const password = document.getElementById('password').value;
+				try {
+					const res = await fetch('/api/admin/login', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrfToken },
+						body: JSON.stringify({ email, password }),
+					});
+					const data = await res.json().catch(() => ({}));
+					if (!res.ok) {
+						errorBox.textContent = data.error || 'Login failed. Please try again.';
+						errorBox.classList.remove('hidden');
+						button.disabled = false;
+						button.textContent = 'Log in';
+						return;
+					}
+					// The API set the httpOnly session cookie; redirect server-side
+					// via a full navigation so the dashboard request carries it.
+					window.location.href = '/admin/dashboard';
+				} catch {
+					errorBox.textContent = 'Could not reach the server. Please try again.';
+					errorBox.classList.remove('hidden');
+					button.disabled = false;
+					button.textContent = 'Log in';
+				}
+			});
+		</script>
+	</body>
+</html>
