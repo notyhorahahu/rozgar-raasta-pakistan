@@ -1,10 +1,15 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import OpportunityCard from '../components/OpportunityCard.astro';
-import opportunitiesData from '../data/opportunities.json';
-import { effectiveStatus, jobPostingsJsonLd, type Opportunity } from '../data/opportunities';
+import { getOpportunities } from '../lib/content';
+import { effectiveStatus, jobPostingsJsonLd } from '../data/opportunities';
 import { breadcrumbJsonLd, organizationJsonLd } from '../data/jsonld';
-const opps = opportunitiesData as Opportunity[];
+
+// Server-rendered: opportunities are read from the database
+// (src/lib/content.ts) so admin edits appear here at once.
+export const prerender = false;
+
+const opps = await getOpportunities();
 const openOpps = opps.filter((o) => effectiveStatus(o) === 'open');
 
 const siteUrl = 'https://rozgar-raasta-pakistan.vercel.app';

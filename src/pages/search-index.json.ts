@@ -1,15 +1,17 @@
-import { getCollection } from 'astro:content';
-import opportunitiesData from '../data/opportunities.json';
-import { slugOf, publishedGuides } from '../data/guides';
+import { getGuides, getOpportunities } from '../lib/content';
+import { slugOf } from '../data/guides';
 import { effectiveStatus } from '../data/opportunities';
 import type { APIRoute } from 'astro';
-import type { Opportunity } from '../data/opportunities';
+
+// Server-rendered: the search index is built from the database first
+// (src/lib/content.ts), with the static files as fallback.
+export const prerender = false;
 
 export const GET: APIRoute = async () => {
-	const guides = publishedGuides(await getCollection('guides'));
+	const guides = await getGuides();
 	// Only open + verified opportunities are searchable — closed and
 	// unverified listings are never offered with an Apply button.
-	const opps = (opportunitiesData as Opportunity[]).filter((o) => effectiveStatus(o) === 'open');
+	const opps = (await getOpportunities()).filter((o) => effectiveStatus(o) === 'open');
 	const items = [
 		...guides.map((g) => ({
 			title: g.data.title,

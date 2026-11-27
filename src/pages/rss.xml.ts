@@ -1,11 +1,15 @@
 import rss from '@astrojs/rss';
-import { getCollection } from 'astro:content';
-import { slugOf, publishedGuides } from '../data/guides';
+import { getGuides } from '../lib/content';
+import { slugOf } from '../data/guides';
 import type { APIRoute } from 'astro';
 
+// Server-rendered: the feed is built from the database first
+// (src/lib/content.ts), with the static collection as fallback.
+export const prerender = false;
+
 export const GET: APIRoute = async (context) => {
-	const guides = publishedGuides(await getCollection('guides')).sort(
-		(a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+	const guides = (await getGuides()).sort(
+		(a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
 	);
 	return rss({
 		title: 'Rozgar Raasta Pakistan — Latest Articles',

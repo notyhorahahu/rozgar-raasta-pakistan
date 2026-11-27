@@ -1,0 +1,38 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import JobForm from '../../../components/admin/JobForm.astro';
+import { ADMIN_ROLES, getAdminUser, getOrSetCsrfToken } from '../../../lib/auth';
+import { DELETE_ROLES, EDITOR_ROLES } from '../../../lib/admin-content';
+
+export const prerender = false;
+
+const user = await getAdminUser(Astro.cookies, ADMIN_ROLES);
+if (!user) {
+	return Astro.redirect('/admin/login');
+}
+// Viewers are read-only: they get a 403 page, not a redirect to login.
+if (!(EDITOR_ROLES as readonly string[]).includes(user.role)) {
+	Astro.response.status = 403;
+}
+const csrfToken = getOrSetCsrfToken(Astro.cookies);
+const canDelete = (DELETE_ROLES as readonly string[]).includes(user.role);
+---
+
+<AdminLayout user={user} csrfToken={csrfToken} title="New Opportunity">
+	{(EDITOR_ROLES as readonly string[]).includes(user.role) ? (
+		<>
+			<p class="mb-4 text-sm text-muted">
+				<a href="/admin/jobs" class="font-semibold text-brand-700 hover:underline">← All opportunities</a>
+			</p>
+			<JobForm csrfToken={csrfToken} canDelete={canDelete} />
+		</>
+	) : (
+		<div class="rounded-lg border border-line bg-white p-6 shadow-sm">
+			<h2 class="text-lg font-extrabold text-ink">403 — Forbidden</h2>
+			<p class="mt-2 text-sm leading-relaxed text-body">
+				Your account (Viewer role) has read-only access. You can browse the opportunities list, but you cannot create opportunities.
+			</p>
+			<p class="mt-4 text-sm"><a href="/admin/jobs" class="font-semibold text-brand-700 hover:underline">← Back to opportunities</a></p>
+		</div>
+	)}
+</AdminLayout>

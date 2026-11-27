@@ -1,13 +1,14 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ArticleCard from '../components/ArticleCard.astro';
-import { getCollection } from 'astro:content';
 import { GUIDE_CATEGORIES } from '../data/site';
-import { publishedGuides } from '../data/guides';
+import { getGuides } from '../lib/content';
 
-const allGuides = publishedGuides(
-	(await getCollection('guides')).sort((a, b) => b.data.updated.valueOf() - a.data.updated.valueOf())
-);
+// Server-rendered: guides are read from the database (src/lib/content.ts)
+// so admin edits appear here at once.
+export const prerender = false;
+
+const allGuides = await getGuides();
 const counts: Record<string, number> = {};
 for (const g of allGuides) counts[g.data.category] = (counts[g.data.category] ?? 0) + 1;
 ---

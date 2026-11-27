@@ -1,0 +1,56 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import JobForm, { type JobRow } from '../../../components/admin/JobForm.astro';
+import { query } from '../../../lib/db';
+import { ADMIN_ROLES, getAdminUser, getOrSetCsrfToken } from '../../../lib/auth';
+import { DELETE_ROLES, EDITOR_ROLES } from '../../../lib/admin-content';
+
+export const prerender = false;
+
+const user = await getAdminUser(Astro.cookies, ADMIN_ROLES);
+if (!user) {
+	return Astro.redirect('/admin/login');
+}
+const csrfToken = getOrSetCsrfToken(Astro.cookies);
+const canEdit = (EDITOR_ROLES as readonly string[]).includes(user.role);
+const canDelete = (DELETE_ROLES as readonly string[]).includes(user.role);
+
+const id = Astro.params.id ?? '';
+const result = await query<JobRow>(
+	`SELECT id, title, company, department, location, province, education,
+		qualification, experience, salary, job_type, category, type, deadline,
+		source_url, source_domain, description, eligibility, procedure, fees,
+		verified_date, required_documents, verification_status, status, published
+	 FROM opportunities WHERE id = $1`,
+	[id],
+);
+const job = result.rows[0] ?? null;
+if (!job) {
+	Astro.response.status = 404;
+}
+---
+
+<AdminLayout user={user} csrfToken={csrfToken} title={job ? `Edit — ${job.title}` : 'Opportunity not found'}>
+	{!job ? (
+		<div class="rounded-lg border border-line bg-white p-6 shadow-sm">
+			<h2 class="text-lg font-extrabold text-ink">404 — Opportunity not found</h2>
+			<p class="mt-2 text-sm leading-relaxed text-body">No opportunity exists with this id. It may have been deleted.</p>
+			<p class="mt-4 text-sm"><a href="/admin/jobs" class="font-semibold text-brand-700 hover:underline">← Back to opportunities</a></p>
+		</div>
+	) : !canEdit ? (
+		<div class="rounded-lg border border-line bg-white p-6 shadow-sm">
+			<h2 class="text-lg font-extrabold text-ink">403 — Forbidden</h2>
+			<p class="mt-2 text-sm leading-relaxed text-body">
+				Your account (Viewer role) has read-only access. You can browse the opportunities list, but you cannot edit opportunities.
+			</p>
+			<p class="mt-4 text-sm"><a href="/admin/jobs" class="font-semibold text-brand-700 hover:underline">← Back to opportunities</a></p>
+		</div>
+	) : (
+		<>
+			<p class="mb-4 text-sm text-muted">
+				<a href="/admin/jobs" class="font-semibold text-brand-700 hover:underline">← All opportunities</a>
+			</p>
+			<JobForm job={job} csrfToken={csrfToken} canDelete={canDelete} />
+		</>
+	)}
+</AdminLayout>

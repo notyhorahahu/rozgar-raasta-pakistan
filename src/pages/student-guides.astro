@@ -1,5 +1,8 @@
 ---
 import CategoryPage from '../components/CategoryPage.astro';
+
+// Server-rendered: content comes from the database via CategoryPage (src/lib/content.ts).
+export const prerender = false;
 ---
 <CategoryPage
 	heroImage="/images/cat-student.jpg"

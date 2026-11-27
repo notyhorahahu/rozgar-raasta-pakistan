@@ -1,15 +1,11 @@
 ---
-import '../../styles/global.css';
-import { getCollection } from 'astro:content';
-import opportunitiesData from '../../data/opportunities.json';
-import { effectiveStatus, type Opportunity } from '../../data/opportunities';
+import AdminLayout from '../../layouts/AdminLayout.astro';
 import { query } from '../../lib/db';
 import { ADMIN_ROLES, getAdminUser, getOrSetCsrfToken } from '../../lib/auth';
+import { getDashboardCounts } from '../../lib/content';
 
 // Server-rendered only. Unauthenticated visitors are redirected to
 // /admin/login here in the frontmatter (server-side, never a JS redirect).
-// A logged-in account without an admin role (e.g. a future public_user)
-// is also sent back to the login page.
 export const prerender = false;
 
 const user = await getAdminUser(Astro.cookies, ADMIN_ROLES);
@@ -38,223 +34,119 @@ const recentLogs = await query<{
 	 ORDER BY a.created_at DESC LIMIT 10`,
 );
 
-// --- Static content (until the content tables arrive in the next milestone) -
-const guides = await getCollection('guides');
-const opps = opportunitiesData as Opportunity[];
-const openOpps = opps.filter((o) => effectiveStatus(o) === 'open');
-const closedOpps = opps.filter((o) => effectiveStatus(o) !== 'open');
-const verifiedOpps = opps.filter((o) => o.status === 'verified');
+// Real content counts (database first, static fallback — labelled honestly).
+const counts = await getDashboardCounts();
+const contentSource = counts.source === 'database' ? 'database' : 'static fallback';
 
-const sections = [
-	{ name: 'Dashboard Overview', slug: 'dashboard', current: true },
-	{ name: 'Manage Government Jobs', slug: 'government-jobs', current: false },
-	{ name: 'Manage Private Jobs', slug: 'private-jobs', current: false },
-	{ name: 'Manage Remote Jobs', slug: 'remote-jobs', current: false },
-	{ name: 'Manage Scholarships', slug: 'scholarships', current: false },
-	{ name: 'Manage Free Courses', slug: 'free-courses', current: false },
-	{ name: 'Manage Internships', slug: 'internships', current: false },
-	{ name: 'Manage Articles', slug: 'articles', current: false },
-	{ name: 'Manage Categories', slug: 'categories', current: false },
-	{ name: 'Manage AI Tools', slug: 'ai-tools', current: false },
-	{ name: 'Manage CV Builder Templates', slug: 'cv-templates', current: false },
-	{ name: 'Manage Newsletter Subscribers', slug: 'newsletter-subscribers', current: false },
-	{ name: 'Manage Contact Messages', slug: 'contact-messages', current: false },
-	{ name: 'Manage Users', slug: 'users', current: false },
-	{ name: 'SEO Management', slug: 'seo', current: false },
-	{ name: 'Website Settings', slug: 'settings', current: false },
-	{ name: 'Analytics', slug: 'analytics', current: false },
-	{ name: 'Security Logs', slug: 'security-logs', current: false },
-	{ name: 'Admin Profile', slug: 'profile', current: false },
-	{ name: 'Backup and Recovery', slug: 'backup', current: false },
-];
-const comingSoon = sections.filter((s) => !s.current);
 const fmtDate = (iso: string) =>
 	new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 ---
 
-<!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<meta name="robots" content="noindex, nofollow" />
-		<title>Admin Dashboard | Rozgar Raasta Pakistan</title>
-		<meta name="description" content="Admin dashboard for Rozgar Raasta Pakistan." />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-		<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-	</head>
-	<body class="min-h-screen bg-cream font-sans text-body antialiased">
-		<div class="flex min-h-screen">
-			<!-- Sidebar -->
-			<aside class="hidden w-64 shrink-0 flex-col bg-ink text-white md:flex">
-				<div class="flex items-center gap-2 px-5 pb-4 pt-6">
-					<img src="/logo-mark.svg" alt="" class="h-8 w-8" />
-					<div>
-						<p class="text-sm font-extrabold leading-tight tracking-tight">Rozgar Raasta</p>
-						<p class="text-[11px] font-semibold uppercase tracking-widest text-brand-500">Admin Panel</p>
-					</div>
-				</div>
-				<nav class="flex-1 overflow-y-auto px-3 pb-4" aria-label="Admin sections">
-					<ul class="space-y-1 text-sm">
-						{sections.map((s) => (
-							<li>
-								{s.current ? (
-									<span class="flex items-center justify-between rounded-md bg-brand-600 px-3 py-2 font-semibold text-white" aria-current="page">
-										{s.name}
-									</span>
-								) : (
-									<span class="flex items-center justify-between rounded-md px-3 py-2 text-white/70" title="Coming soon — part of the next milestone">
-										{s.name}
-										<span class="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/70">Soon</span>
-									</span>
-								)}
-							</li>
-						))}
-					</ul>
-				</nav>
-				<div class="border-t border-white/10 px-5 py-4 text-xs leading-relaxed text-white/70">
-					<p class="font-semibold text-white">{user.name ?? user.email}</p>
-					<p>{user.email}</p>
-					<p class="mt-1 capitalize">Role: {user.role.replace('_', ' ')}</p>
-				</div>
-			</aside>
-
-			<!-- Main -->
-			<div class="flex min-w-0 flex-1 flex-col">
-				<header class="flex items-center justify-between gap-3 border-b border-line bg-white px-4 py-3 sm:px-6">
-					<div class="min-w-0">
-						<h1 class="truncate text-xl font-extrabold text-ink sm:text-2xl">Dashboard Overview</h1>
-						<p class="truncate text-xs text-muted sm:text-sm">Signed in as {user.email} · {user.role.replace('_', ' ')}</p>
-					</div>
-					<button
-						id="logout-button"
-						data-csrf={csrfToken}
-						class="shrink-0 rounded-md border border-line bg-white px-4 py-2 text-sm font-semibold text-ink hover:bg-brand-50"
-					>
-						Log out
-					</button>
-				</header>
-
-				<main class="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6">
-					<!-- Real database stats -->
-					<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-						<div class="rounded-lg border border-line bg-white p-5 shadow-sm">
-							<p class="text-3xl font-extrabold text-ink">{totalUsers}</p>
-							<p class="mt-1 text-sm text-muted">Total users (database)</p>
-						</div>
-						<div class="rounded-lg border border-line bg-white p-5 shadow-sm">
-							<p class="text-3xl font-extrabold text-ink">{Number(activeSessions.rows[0]?.count ?? 0)}</p>
-							<p class="mt-1 text-sm text-muted">Active sessions (database)</p>
-						</div>
-						<div class="rounded-lg border border-line bg-white p-5 shadow-sm">
-							<p class="text-3xl font-extrabold text-ink">{opps.length}</p>
-							<p class="mt-1 text-sm text-muted">Opportunities — static content</p>
-						</div>
-						<div class="rounded-lg border border-line bg-white p-5 shadow-sm">
-							<p class="text-3xl font-extrabold text-ink">{guides.length}</p>
-							<p class="mt-1 text-sm text-muted">Guides — static content</p>
-						</div>
-					</div>
-
-					<!-- Users by role -->
-					<section class="mt-6 rounded-lg border border-line bg-white p-6 shadow-sm">
-						<h2 class="text-lg font-extrabold text-ink">Users by role</h2>
-						<p class="mt-1 text-sm text-muted">Real counts from the users table.</p>
-						{usersByRole.rows.length === 0 ? (
-							<p class="mt-4 text-sm">No users yet.</p>
-						) : (
-							<ul class="mt-4 space-y-2 text-sm">
-								{usersByRole.rows.map((r) => (
-									<li class="flex justify-between border-b border-line pb-2">
-										<span class="capitalize">{r.role.replace('_', ' ')}</span>
-										<strong class="text-ink">{Number(r.count)}</strong>
-									</li>
-								))}
-							</ul>
-						)}
-					</section>
-
-					<!-- Static content breakdown -->
-					<section class="mt-6 rounded-lg border border-line bg-white p-6 shadow-sm">
-						<h2 class="text-lg font-extrabold text-ink">Content — static files (not yet in the database)</h2>
-						<p class="mt-1 text-sm text-muted">These numbers are read from <code class="rounded bg-brand-50 px-1.5 py-0.5 text-xs">src/data/opportunities.json</code> and the guides collection. They move into the database in the next milestone; until then they are labelled static content.</p>
-						<ul class="mt-4 grid gap-2 text-sm sm:grid-cols-2">
-							<li class="flex justify-between border-b border-line pb-2"><span>Total opportunities</span><strong class="text-ink">{opps.length}</strong></li>
-							<li class="flex justify-between border-b border-line pb-2"><span>Open opportunities</span><strong class="text-ink">{openOpps.length}</strong></li>
-							<li class="flex justify-between border-b border-line pb-2"><span>Closed / expired opportunities</span><strong class="text-ink">{closedOpps.length}</strong></li>
-							<li class="flex justify-between border-b border-line pb-2"><span>Verified opportunities</span><strong class="text-ink">{verifiedOpps.length}</strong></li>
-							<li class="flex justify-between border-b border-line pb-2"><span>Published guides</span><strong class="text-ink">{guides.length}</strong></li>
-						</ul>
-					</section>
-
-					<!-- Recent audit log -->
-					<section class="mt-6 rounded-lg border border-line bg-white p-6 shadow-sm">
-						<h2 class="text-lg font-extrabold text-ink">Recent security events</h2>
-						<p class="mt-1 text-sm text-muted">Latest 10 entries from the audit log (logins, logouts, failed logins, lockouts).</p>
-						{recentLogs.rows.length === 0 ? (
-							<p class="mt-4 text-sm">No audit log entries yet.</p>
-						) : (
-							<div class="mt-4 overflow-x-auto">
-								<table class="w-full min-w-[560px] text-left text-sm">
-									<thead>
-										<tr class="border-b border-line text-xs uppercase tracking-wide text-muted">
-											<th class="py-2 pr-3">When</th>
-											<th class="py-2 pr-3">Event</th>
-											<th class="py-2 pr-3">User</th>
-											<th class="py-2">IP</th>
-										</tr>
-									</thead>
-									<tbody>
-										{recentLogs.rows.map((log) => (
-											<tr class="border-b border-line last:border-0">
-												<td class="py-2 pr-3 whitespace-nowrap">{fmtDate(log.created_at)}</td>
-												<td class="py-2 pr-3 font-medium text-ink">{log.action}</td>
-												<td class="py-2 pr-3">{log.email ?? '—'}</td>
-												<td class="py-2">{log.ip ?? '—'}</td>
-											</tr>
-										))}
-									</tbody>
-								</table>
-							</div>
-						)}
-					</section>
-
-					<!-- Coming soon -->
-					<section class="mt-6 rounded-lg border border-dashed border-line bg-white p-6 shadow-sm">
-						<h2 class="text-lg font-extrabold text-ink">More sections — coming soon</h2>
-						<p class="mt-1 text-sm leading-relaxed text-muted">The 19 sections below are part of the next milestone (content tables + management screens). They are listed here so the shape of the panel is visible, but they have no pages and no data yet — nothing here is demo or fake data.</p>
-						<ul class="mt-4 grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
-							{comingSoon.map((s) => (
-								<li class="flex items-center justify-between rounded-md bg-cream px-3 py-2">
-									<span class="font-medium text-ink">{s.name}</span>
-									<span class="rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted">Coming soon</span>
-								</li>
-							))}
-						</ul>
-					</section>
-
-					<p class="mt-6 text-center text-xs text-muted">
-						<a href="/" class="font-semibold text-brand-600 hover:underline">View the public website →</a>
-					</p>
-				</main>
-			</div>
+<AdminLayout user={user} csrfToken={csrfToken} title="Dashboard Overview" current="dashboard">
+	<!-- Real database stats -->
+	<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+		<div class="rounded-lg border border-line bg-white p-5 shadow-sm">
+			<p class="text-3xl font-extrabold text-ink">{totalUsers}</p>
+			<p class="mt-1 text-sm text-muted">Total users (database)</p>
 		</div>
+		<div class="rounded-lg border border-line bg-white p-5 shadow-sm">
+			<p class="text-3xl font-extrabold text-ink">{Number(activeSessions.rows[0]?.count ?? 0)}</p>
+			<p class="mt-1 text-sm text-muted">Active sessions (database)</p>
+		</div>
+		<div class="rounded-lg border border-line bg-white p-5 shadow-sm">
+			<p class="text-3xl font-extrabold text-ink">{counts.totalOpportunities}</p>
+			<p class="mt-1 text-sm text-muted">Opportunities ({contentSource})</p>
+		</div>
+		<div class="rounded-lg border border-line bg-white p-5 shadow-sm">
+			<p class="text-3xl font-extrabold text-ink">{counts.totalGuides}</p>
+			<p class="mt-1 text-sm text-muted">Guides ({contentSource})</p>
+		</div>
+	</div>
 
-		<script>
-			const button = document.getElementById('logout-button');
-			button?.addEventListener('click', async () => {
-				const csrfToken = button.getAttribute('data-csrf') ?? '';
-				try {
-					await fetch('/api/admin/logout', {
-						method: 'POST',
-						headers: { 'x-csrf-token': csrfToken },
-					});
-				} finally {
-					window.location.href = '/admin/login';
-				}
-			});
-		</script>
-	</body>
-</html>
+	<!-- Content breakdown -->
+	<section class="mt-6 rounded-lg border border-line bg-white p-6 shadow-sm">
+		<h2 class="text-lg font-extrabold text-ink">Content — {contentSource}</h2>
+		<p class="mt-1 text-sm text-muted">
+			{counts.source === 'database'
+				? 'These numbers are read live from the opportunities and guides tables. Edits in the admin panel appear on the public site immediately.'
+				: 'The database could not be reached, so these numbers come from the static files (src/data/opportunities.json and the guides collection). The public site is showing the same fallback.'}
+		</p>
+		<ul class="mt-4 grid gap-2 text-sm sm:grid-cols-2">
+			<li class="flex justify-between border-b border-line pb-2"><span>Total opportunities</span><strong class="text-ink">{counts.totalOpportunities}</strong></li>
+			<li class="flex justify-between border-b border-line pb-2"><span>Open opportunities</span><strong class="text-ink">{counts.openOpportunities}</strong></li>
+			<li class="flex justify-between border-b border-line pb-2"><span>Closed opportunities</span><strong class="text-ink">{counts.closedOpportunities}</strong></li>
+			<li class="flex justify-between border-b border-line pb-2"><span>Unverified opportunities</span><strong class="text-ink">{counts.unverifiedOpportunities}</strong></li>
+			<li class="flex justify-between border-b border-line pb-2"><span>Total guides</span><strong class="text-ink">{counts.totalGuides}</strong></li>
+			<li class="flex justify-between border-b border-line pb-2"><span>Published guides</span><strong class="text-ink">{counts.publishedGuides}</strong></li>
+			<li class="flex justify-between border-b border-line pb-2"><span>Unpublished guides</span><strong class="text-ink">{counts.unpublishedGuides}</strong></li>
+		</ul>
+		<div class="mt-5 flex flex-wrap gap-3">
+			<a href="/admin/jobs" class="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">Manage opportunities →</a>
+			<a href="/admin/guides" class="rounded-md border border-line bg-white px-4 py-2 text-sm font-semibold text-ink hover:bg-brand-50">Manage guides →</a>
+		</div>
+	</section>
+
+	<!-- Users by role -->
+	<section class="mt-6 rounded-lg border border-line bg-white p-6 shadow-sm">
+		<h2 class="text-lg font-extrabold text-ink">Users by role</h2>
+		<p class="mt-1 text-sm text-muted">Real counts from the users table.</p>
+		{usersByRole.rows.length === 0 ? (
+			<p class="mt-4 text-sm">No users yet.</p>
+		) : (
+			<ul class="mt-4 space-y-2 text-sm">
+				{usersByRole.rows.map((r) => (
+					<li class="flex justify-between border-b border-line pb-2">
+						<span class="capitalize">{r.role.replace('_', ' ')}</span>
+						<strong class="text-ink">{Number(r.count)}</strong>
+					</li>
+				))}
+			</ul>
+		)}
+	</section>
+
+	<!-- Recent audit log -->
+	<section class="mt-6 rounded-lg border border-line bg-white p-6 shadow-sm">
+		<h2 class="text-lg font-extrabold text-ink">Recent security events</h2>
+		<p class="mt-1 text-sm text-muted">Latest 10 entries from the audit log (logins, logouts, failed logins, lockouts, content changes).</p>
+		{recentLogs.rows.length === 0 ? (
+			<p class="mt-4 text-sm">No audit log entries yet.</p>
+		) : (
+			<div class="mt-4 overflow-x-auto">
+				<table class="w-full min-w-[560px] text-left text-sm">
+					<thead>
+						<tr class="border-b border-line text-xs uppercase tracking-wide text-muted">
+							<th class="py-2 pr-3">When</th>
+							<th class="py-2 pr-3">Event</th>
+							<th class="py-2 pr-3">User</th>
+							<th class="py-2">IP</th>
+						</tr>
+					</thead>
+					<tbody>
+						{recentLogs.rows.map((log) => (
+							<tr class="border-b border-line last:border-0">
+								<td class="py-2 pr-3 whitespace-nowrap">{fmtDate(log.created_at)}</td>
+								<td class="py-2 pr-3 font-medium text-ink">{log.action}</td>
+								<td class="py-2 pr-3">{log.email ?? '—'}</td>
+								<td class="py-2">{log.ip ?? '—'}</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+		)}
+	</section>
+
+	<!-- More sections — coming soon -->
+	<section class="mt-6 rounded-lg border border-dashed border-line bg-white p-6 shadow-sm">
+		<h2 class="text-lg font-extrabold text-ink">More sections — coming soon</h2>
+		<p class="mt-1 text-sm leading-relaxed text-muted">Jobs and Articles are live above. The remaining sections are part of the next milestone — nothing here is demo or fake data.</p>
+		<ul class="mt-4 grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
+			{['Manage Categories', 'Manage CV Builder Templates', 'Manage Newsletter Subscribers', 'Manage Contact Messages', 'Manage Users', 'SEO Management', 'Website Settings', 'Analytics', 'Security Logs', 'Admin Profile', 'Backup and Recovery'].map((name) => (
+				<li class="flex items-center justify-between rounded-md bg-cream px-3 py-2">
+					<span class="font-medium text-ink">{name}</span>
+					<span class="rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted">Coming soon</span>
+				</li>
+			))}
+		</ul>
+	</section>
+</AdminLayout>

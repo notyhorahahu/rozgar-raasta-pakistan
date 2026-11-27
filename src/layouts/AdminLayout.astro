@@ -1,0 +1,148 @@
+---
+import '../styles/global.css';
+import type { AdminUser } from '../lib/auth';
+
+interface Props {
+	user: AdminUser;
+	csrfToken: string;
+	title: string;
+	subtitle?: string;
+	/** Slug of the section to highlight, or null for none. */
+	current?: string | null;
+}
+
+const { user, csrfToken, title, subtitle, current = null } = Astro.props;
+
+interface Section {
+	name: string;
+	slug: string;
+	href?: string;
+}
+
+// The 20 admin sections. Jobs + Articles are live (they link to the
+// management pages); the rest are labelled "Soon" until their milestone.
+const sections: Section[] = [
+	{ name: 'Dashboard Overview', slug: 'dashboard', href: '/admin/dashboard' },
+	{ name: 'Manage Government Jobs', slug: 'government-jobs', href: '/admin/jobs?category=government' },
+	{ name: 'Manage Private Jobs', slug: 'private-jobs', href: '/admin/jobs?category=private' },
+	{ name: 'Manage Remote Jobs', slug: 'remote-jobs', href: '/admin/jobs?category=remote' },
+	{ name: 'Manage Scholarships', slug: 'scholarships', href: '/admin/jobs?category=scholarship' },
+	{ name: 'Manage Free Courses', slug: 'free-courses', href: '/admin/jobs?category=course' },
+	{ name: 'Manage Internships', slug: 'internships', href: '/admin/jobs?category=internship' },
+	{ name: 'Manage Articles', slug: 'articles', href: '/admin/guides' },
+	{ name: 'Manage Categories', slug: 'categories' },
+	{ name: 'Manage AI Tools', slug: 'ai-tools', href: '/admin/jobs?category=ai-tools' },
+	{ name: 'Manage CV Builder Templates', slug: 'cv-templates' },
+	{ name: 'Manage Newsletter Subscribers', slug: 'newsletter-subscribers' },
+	{ name: 'Manage Contact Messages', slug: 'contact-messages' },
+	{ name: 'Manage Users', slug: 'users' },
+	{ name: 'SEO Management', slug: 'seo' },
+	{ name: 'Website Settings', slug: 'settings' },
+	{ name: 'Analytics', slug: 'analytics' },
+	{ name: 'Security Logs', slug: 'security-logs' },
+	{ name: 'Admin Profile', slug: 'profile' },
+	{ name: 'Backup and Recovery', slug: 'backup' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="robots" content="noindex, nofollow" />
+		<title>{title} | Rozgar Raasta Pakistan</title>
+		<meta name="description" content="Admin panel for Rozgar Raasta Pakistan." />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+	</head>
+	<body class="min-h-screen bg-cream font-sans text-body antialiased">
+		<div class="flex min-h-screen">
+			<!-- Sidebar -->
+			<aside class="hidden w-64 shrink-0 flex-col bg-ink text-white md:flex">
+				<div class="flex items-center gap-2 px-5 pb-4 pt-6">
+					<img src="/logo-mark.svg" alt="" class="h-8 w-8" />
+					<div>
+						<p class="text-sm font-extrabold leading-tight tracking-tight">Rozgar Raasta</p>
+						<p class="text-[11px] font-semibold uppercase tracking-widest text-brand-500">Admin Panel</p>
+					</div>
+				</div>
+				<nav class="flex-1 overflow-y-auto px-3 pb-4" aria-label="Admin sections">
+					<ul class="space-y-1 text-sm">
+						{sections.map((s) => (
+							<li>
+								{s.href ? (
+									<a
+										href={s.href}
+										class={`flex items-center justify-between rounded-md px-3 py-2 ${s.slug === current ? 'bg-brand-600 font-semibold text-white' : 'text-white/70 hover:bg-white/10 hover:text-white'}`}
+										{...(s.slug === current ? { 'aria-current': 'page' } : {})}
+									>
+										{s.name}
+									</a>
+								) : (
+									<span class="flex items-center justify-between rounded-md px-3 py-2 text-white/70" title="Coming soon — part of the next milestone">
+										{s.name}
+										<span class="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/70">Soon</span>
+									</span>
+								)}
+							</li>
+						))}
+					</ul>
+				</nav>
+				<div class="border-t border-white/10 px-5 py-4 text-xs leading-relaxed text-white/70">
+					<p class="font-semibold text-white">{user.name ?? user.email}</p>
+					<p>{user.email}</p>
+					<p class="mt-1 capitalize">Role: {user.role.replace('_', ' ')}</p>
+				</div>
+			</aside>
+
+			<!-- Main -->
+			<div class="flex min-w-0 flex-1 flex-col">
+				<header class="flex items-center justify-between gap-3 border-b border-line bg-white px-4 py-3 sm:px-6">
+					<div class="min-w-0">
+						<h1 class="truncate text-xl font-extrabold text-ink sm:text-2xl">{title}</h1>
+						<p class="truncate text-xs text-muted sm:text-sm">{subtitle ?? `Signed in as ${user.email} · ${user.role.replace('_', ' ')}`}</p>
+					</div>
+					<button
+						id="logout-button"
+						data-csrf={csrfToken}
+						class="shrink-0 rounded-md border border-line bg-white px-4 py-2 text-sm font-semibold text-ink hover:bg-brand-50"
+					>
+						Log out
+					</button>
+				</header>
+
+				<!-- Mobile nav (sidebar is hidden below md) -->
+				<nav class="flex gap-2 overflow-x-auto border-b border-line bg-white px-4 py-2 text-sm md:hidden" aria-label="Admin sections">
+					<a href="/admin/dashboard" class="shrink-0 rounded-md bg-cream px-3 py-1.5 font-semibold text-ink">Dashboard</a>
+					<a href="/admin/jobs" class="shrink-0 rounded-md bg-cream px-3 py-1.5 font-semibold text-ink">Jobs</a>
+					<a href="/admin/guides" class="shrink-0 rounded-md bg-cream px-3 py-1.5 font-semibold text-ink">Articles</a>
+				</nav>
+
+				<main class="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6">
+					<slot />
+					<p class="mt-6 text-center text-xs text-muted">
+						<a href="/" class="font-semibold text-brand-600 hover:underline">View the public website →</a>
+					</p>
+				</main>
+			</div>
+		</div>
+
+		<script>
+			const button = document.getElementById('logout-button');
+			button?.addEventListener('click', async () => {
+				const csrfToken = button.getAttribute('data-csrf') ?? '';
+				try {
+					await fetch('/api/admin/logout', {
+						method: 'POST',
+						headers: { 'x-csrf-token': csrfToken },
+					});
+				} finally {
+					window.location.href = '/admin/login';
+				}
+			});
+		</script>
+	</body>
+</html>

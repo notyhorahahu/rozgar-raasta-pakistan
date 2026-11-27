@@ -2,10 +2,8 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ArticleCard from './ArticleCard.astro';
 import OpportunityCard from './OpportunityCard.astro';
-import { getCollection } from 'astro:content';
-import opportunitiesData from '../data/opportunities.json';
+import { getGuides, getOpportunities } from '../lib/content';
 import { effectiveStatus, jobPostingsJsonLd, type Opportunity } from '../data/opportunities';
-import { publishedGuides } from '../data/guides';
 import { breadcrumbJsonLd, organizationJsonLd } from '../data/jsonld';
 
 interface OfficialLink {
@@ -28,13 +26,11 @@ interface Props {
 
 const { title, description, intro, oppCategories, guideCategories, officialLinks, guideHeading = 'Guides', heroImage, heroImageAlt } = Astro.props;
 
-const opps = (opportunitiesData as Opportunity[]).filter((o) => oppCategories.includes(o.category));
+const opps = (await getOpportunities()).filter((o) => oppCategories.includes(o.category));
 const openOpps = opps.filter((o) => effectiveStatus(o) === 'open');
 const closedOpps = opps.filter((o) => effectiveStatus(o) === 'closed');
 const unverifiedOpps = opps.filter((o) => effectiveStatus(o) === 'unverified');
-const allGuides = publishedGuides(
-	(await getCollection('guides')).sort((a, b) => b.data.updated.valueOf() - a.data.updated.valueOf())
-);
+const allGuides = await getGuides();
 const guides = allGuides.filter((g) => guideCategories.includes(g.data.category));
 
 const siteUrl = 'https://rozgar-raasta-pakistan.vercel.app';

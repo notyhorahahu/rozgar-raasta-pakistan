@@ -2,15 +2,17 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ArticleCard from '../components/ArticleCard.astro';
 import OpportunityCard from '../components/OpportunityCard.astro';
-import { getCollection } from 'astro:content';
-import opportunitiesData from '../data/opportunities.json';
+import { getGuides, getOpportunities } from '../lib/content';
 import { effectiveStatus, type Opportunity } from '../data/opportunities';
-import { publishedGuides, slugOf } from '../data/guides';
+import { slugOf } from '../data/guides';
 
-const allGuides = publishedGuides(
-	(await getCollection('guides')).sort((a, b) => b.data.updated.valueOf() - a.data.updated.valueOf())
-);
-const opps = opportunitiesData as Opportunity[];
+// Server-rendered: opportunities and guides are read from the database
+// (src/lib/content.ts) so admin edits appear on the public site at once.
+// If the database is down, the static files are used as a fallback.
+export const prerender = false;
+
+const allGuides = await getGuides();
+const opps = await getOpportunities();
 const openOpps = opps.filter((o) => effectiveStatus(o) === 'open');
 const openPct = Math.round((openOpps.length / opps.length) * 100);
 const openJobs = openOpps.filter((o) => o.type === 'job');

@@ -101,6 +101,17 @@ function checkLinks() {
   const dist = existsSync(join(ROOT, 'dist', 'client')) ? join(ROOT, 'dist', 'client') : join(ROOT, 'dist');
   if (!existsSync(dist)) { fail('dist/ does not exist — run the build first'); return; }
   const { routes, assets } = collectRoutes(dist);
+  // Server-rendered routes (prerender = false) have no HTML file in
+  // dist/ but are real pages served by the Vercel adapter — the admin
+  // CRUD milestone made the homepage, listings, guides, search index
+  // and RSS server-rendered so admin edits appear at once.
+  const dynamicRoutes = new Set([
+    '/', '/opportunities', '/guides', '/jobs/government', '/jobs/private',
+    '/jobs/remote', '/earning', '/freelancing', '/skills', '/scholarships',
+    '/internships', '/ai-tools', '/student-guides', '/business-guides',
+    '/career-preparation', '/search', '/search-index.json', '/rss.xml',
+  ]);
+  const isDynamic = (cand) => dynamicRoutes.has(cand) || cand.startsWith('/guides/');
   const broken = [];
   let checked = 0;
   const walk = (dir) => {
@@ -122,7 +133,7 @@ function checkLinks() {
         const cand = path.replace(/\/$/, '') || '/';
         const file = join(dist, path.replace(/^\//, ''));
         const idx = join(dist, path.replace(/^\//, ''), 'index.html');
-        if (routes.has(cand) || assets.has(path) || existsSync(file) || existsSync(idx)) continue;
+        if (routes.has(cand) || assets.has(path) || isDynamic(cand) || existsSync(file) || existsSync(idx)) continue;
         broken.push(`${relative(dist, p)} -> ${u}`);
       }
     }

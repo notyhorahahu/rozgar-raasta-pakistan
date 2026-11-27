@@ -1,0 +1,284 @@
+---
+import { JOB_TYPES, OPPORTUNITY_TYPES, OPPORTUNITY_STATUSES, VERIFICATION_STATUSES } from '../../lib/admin-content';
+
+export interface JobRow {
+	id: string;
+	title: string;
+	company: string;
+	department: string | null;
+	location: string;
+	province: string | null;
+	education: string | null;
+	qualification: string | null;
+	experience: string | null;
+	salary: string | null;
+	job_type: string;
+	category: string;
+	type: string;
+	deadline: string | Date | null;
+	source_url: string;
+	source_domain: string | null;
+	description: string | null;
+	eligibility: string | null;
+	procedure: string | null;
+	fees: string | null;
+	verified_date: string | Date | null;
+	required_documents: string | null;
+	verification_status: string;
+	status: string;
+	published: boolean;
+}
+
+interface Props {
+	job?: JobRow | null;
+	csrfToken: string;
+	canDelete: boolean;
+}
+
+const { job = null, csrfToken, canDelete } = Astro.props;
+const isEdit = job !== null;
+const dstr = (d: string | Date | null): string => {
+	if (!d) return '';
+	const dt = d instanceof Date ? d : new Date(d);
+	return Number.isNaN(dt.getTime()) ? '' : dt.toISOString().slice(0, 10);
+};
+
+const inputCls = 'mt-1 w-full rounded-md border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-100';
+const labelCls = 'block text-sm font-semibold text-ink';
+const sectionCls = 'rounded-lg border border-line bg-white p-6 shadow-sm';
+---
+
+<form id="job-form" class="space-y-6" novalidate>
+	<p id="form-error" class="hidden rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
+
+	<section class={sectionCls}>
+		<h2 class="text-lg font-extrabold text-ink">Basic details</h2>
+		<div class="mt-4 grid gap-4 sm:grid-cols-2">
+			<div class="sm:col-span-2">
+				<label for="title" class={labelCls}>Title *</label>
+				<input id="title" name="title" required value={job?.title ?? ''} placeholder="e.g. PPSC Lecturer (BS-17) — 120 posts" class={inputCls} />
+			</div>
+			<div>
+				<label for="company" class={labelCls}>Company / organisation *</label>
+				<input id="company" name="company" required value={job?.company ?? ''} placeholder="e.g. Punjab Public Service Commission (PPSC)" class={inputCls} />
+			</div>
+			<div>
+				<label for="department" class={labelCls}>Department</label>
+				<input id="department" name="department" value={job?.department ?? ''} class={inputCls} />
+			</div>
+			<div>
+				<label for="location" class={labelCls}>Location</label>
+				<input id="location" name="location" value={job?.location ?? ''} placeholder="e.g. Lahore, Punjab" class={inputCls} />
+			</div>
+			<div>
+				<label for="province" class={labelCls}>Province</label>
+				<input id="province" name="province" value={job?.province ?? ''} placeholder="e.g. Punjab" class={inputCls} />
+			</div>
+			<div>
+				<label for="job_type" class={labelCls}>Job type *</label>
+				<select id="job_type" name="job_type" required class={inputCls}>
+					{JOB_TYPES.map((t) => <option value={t} selected={job?.job_type === t}>{t}</option>)}
+				</select>
+			</div>
+			<div>
+				<label for="category" class={labelCls}>Category *</label>
+				<select id="category" name="category" required class={inputCls}>
+					{JOB_TYPES.map((t) => <option value={t} selected={job?.category === t}>{t}</option>)}
+				</select>
+			</div>
+			<div>
+				<label for="type" class={labelCls}>Type</label>
+				<select id="type" name="type" class={inputCls}>
+					{OPPORTUNITY_TYPES.map((t) => <option value={t} selected={(job?.type ?? 'job') === t}>{t}</option>)}
+				</select>
+			</div>
+			<div>
+				<label for="deadline" class={labelCls}>Deadline</label>
+				<input id="deadline" name="deadline" type="date" value={dstr(job?.deadline ?? null)} class={inputCls} />
+			</div>
+			<div>
+				<label for="salary" class={labelCls}>Salary</label>
+				<input id="salary" name="salary" value={job?.salary ?? ''} placeholder="e.g. Rs 80,000 – 120,000 / month" class={inputCls} />
+			</div>
+			<div>
+				<label for="education" class={labelCls}>Education</label>
+				<input id="education" name="education" value={job?.education ?? ''} placeholder="e.g. Bachelor's degree" class={inputCls} />
+			</div>
+			<div>
+				<label for="qualification" class={labelCls}>Qualification</label>
+				<input id="qualification" name="qualification" value={job?.qualification ?? ''} class={inputCls} />
+			</div>
+			<div>
+				<label for="experience" class={labelCls}>Experience</label>
+				<input id="experience" name="experience" value={job?.experience ?? ''} placeholder="e.g. 2+ years" class={inputCls} />
+			</div>
+		</div>
+	</section>
+
+	<section class={sectionCls}>
+		<h2 class="text-lg font-extrabold text-ink">Source (official link)</h2>
+		<div class="mt-4 grid gap-4 sm:grid-cols-2">
+			<div class="sm:col-span-2">
+				<label for="source_url" class={labelCls}>Source URL (official application link) *</label>
+				<input id="source_url" name="source_url" type="url" required value={job?.source_url ?? ''} placeholder="https://www.ppsc.gop.pk/" class={inputCls} />
+			</div>
+			<div>
+				<label for="source_domain" class={labelCls}>Source domain</label>
+				<input id="source_domain" name="source_domain" value={job?.source_domain ?? ''} placeholder="Auto-filled from the URL" class={inputCls} />
+				<p class="mt-1 text-xs text-muted">Auto-filled from the source URL when left empty.</p>
+			</div>
+			<div>
+				<label for="verified_date" class={labelCls}>Verified date</label>
+				<input id="verified_date" name="verified_date" type="date" value={dstr(job?.verified_date ?? null)} class={inputCls} />
+			</div>
+		</div>
+	</section>
+
+	<section class={sectionCls}>
+		<h2 class="text-lg font-extrabold text-ink">Details</h2>
+		<div class="mt-4 space-y-4">
+			<div>
+				<label for="description" class={labelCls}>Description</label>
+				<textarea id="description" name="description" rows="3" class={inputCls}>{job?.description ?? ''}</textarea>
+			</div>
+			<div>
+				<label for="eligibility" class={labelCls}>Eligibility</label>
+				<textarea id="eligibility" name="eligibility" rows="4" class={inputCls}>{job?.eligibility ?? ''}</textarea>
+			</div>
+			<div>
+				<label for="procedure" class={labelCls}>How to apply (procedure)</label>
+				<textarea id="procedure" name="procedure" rows="4" class={inputCls}>{job?.procedure ?? ''}</textarea>
+			</div>
+			<div>
+				<label for="fees" class={labelCls}>Fees</label>
+				<textarea id="fees" name="fees" rows="2" class={inputCls}>{job?.fees ?? ''}</textarea>
+			</div>
+			<div>
+				<label for="required_documents" class={labelCls}>Required documents</label>
+				<textarea id="required_documents" name="required_documents" rows="2" class={inputCls}>{job?.required_documents ?? ''}</textarea>
+			</div>
+		</div>
+	</section>
+
+	<section class={sectionCls}>
+		<h2 class="text-lg font-extrabold text-ink">Status</h2>
+		<div class="mt-4 grid gap-4 sm:grid-cols-3">
+			<div>
+				<label for="status" class={labelCls}>Status</label>
+				<select id="status" name="status" class={inputCls}>
+					{OPPORTUNITY_STATUSES.map((s) => <option value={s} selected={(job?.status ?? 'open') === s}>{s}</option>)}
+				</select>
+			</div>
+			<div>
+				<label for="verification_status" class={labelCls}>Verification</label>
+				<select id="verification_status" name="verification_status" class={inputCls}>
+					{VERIFICATION_STATUSES.map((s) => <option value={s} selected={(job?.verification_status ?? 'verified') === s}>{s}</option>)}
+				</select>
+			</div>
+			<div class="flex items-end pb-1">
+				<label class="flex items-center gap-2 text-sm font-semibold text-ink">
+					<input id="published" name="published" type="checkbox" checked={job?.published ?? true} class="h-4 w-4 accent-[#FF4C28]" />
+					Published (visible on the public site)
+				</label>
+			</div>
+		</div>
+	</section>
+
+	<div class="flex flex-wrap items-center gap-3">
+		<button id="save-button" type="submit" class="rounded-md bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60">
+			{isEdit ? 'Save changes' : 'Create opportunity'}
+		</button>
+		<a href="/admin/jobs" class="rounded-md border border-line bg-white px-5 py-2.5 text-sm font-semibold text-ink hover:bg-brand-50">Cancel</a>
+		{isEdit && canDelete && (
+			<button id="delete-button" type="button" class="ml-auto rounded-md border border-red-300 bg-red-50 px-5 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-100">
+				Delete
+			</button>
+		)}
+	</div>
+</form>
+
+<script define:vars={{ csrfToken, isEdit, jobId: job?.id ?? null }}>
+	const form = document.getElementById('job-form');
+	const errorBox = document.getElementById('form-error');
+	const saveBtn = document.getElementById('save-button');
+	const sourceUrl = document.getElementById('source_url');
+	const sourceDomain = document.getElementById('source_domain');
+
+	// Auto-fill the domain from the URL when the field is empty.
+	sourceUrl.addEventListener('blur', () => {
+		if (sourceDomain.value.trim() !== '') return;
+		try {
+			sourceDomain.value = new URL(sourceUrl.value.trim()).hostname.replace(/^www\./, '');
+		} catch { /* invalid URL — server validation will report it */ }
+	});
+
+	const showError = (msg) => {
+		errorBox.textContent = msg;
+		errorBox.classList.remove('hidden');
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+	};
+
+	form.addEventListener('submit', async (event) => {
+		event.preventDefault();
+		errorBox.classList.add('hidden');
+		saveBtn.disabled = true;
+		saveBtn.textContent = isEdit ? 'Saving…' : 'Creating…';
+		const fd = new FormData(form);
+		const body = {
+			title: fd.get('title'), company: fd.get('company'), department: fd.get('department'),
+			location: fd.get('location'), province: fd.get('province'), education: fd.get('education'),
+			qualification: fd.get('qualification'), experience: fd.get('experience'), salary: fd.get('salary'),
+			job_type: fd.get('job_type'), category: fd.get('category'), type: fd.get('type'),
+			deadline: fd.get('deadline'), source_url: fd.get('source_url'), source_domain: fd.get('source_domain'),
+			description: fd.get('description'), eligibility: fd.get('eligibility'), procedure: fd.get('procedure'),
+			fees: fd.get('fees'), verified_date: fd.get('verified_date'),
+			required_documents: fd.get('required_documents'),
+			verification_status: fd.get('verification_status'), status: fd.get('status'),
+			published: fd.get('published') === 'on',
+		};
+		try {
+			const res = await fetch(isEdit ? `/api/admin/jobs/${jobId}` : '/api/admin/jobs', {
+				method: isEdit ? 'PUT' : 'POST',
+				headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrfToken },
+				body: JSON.stringify(body),
+			});
+			const data = await res.json().catch(() => ({}));
+			if (!res.ok) {
+				showError(data.error || 'Could not save. Please try again.');
+				saveBtn.disabled = false;
+				saveBtn.textContent = isEdit ? 'Save changes' : 'Create opportunity';
+				return;
+			}
+			window.location.href = `/admin/jobs?${isEdit ? 'updated' : 'created'}=1`;
+		} catch {
+			showError('Could not reach the server. Please try again.');
+			saveBtn.disabled = false;
+			saveBtn.textContent = isEdit ? 'Save changes' : 'Create opportunity';
+		}
+	});
+
+	const deleteBtn = document.getElementById('delete-button');
+	deleteBtn?.addEventListener('click', async () => {
+		if (!window.confirm('Delete this opportunity? This cannot be undone. It will disappear from the admin list and the public site.')) return;
+		deleteBtn.disabled = true;
+		deleteBtn.textContent = 'Deleting…';
+		try {
+			const res = await fetch(`/api/admin/jobs/${jobId}`, {
+				method: 'DELETE',
+				headers: { 'x-csrf-token': csrfToken },
+			});
+			const data = await res.json().catch(() => ({}));
+			if (!res.ok) {
+				showError(data.error || 'Could not delete. Please try again.');
+				deleteBtn.disabled = false;
+				deleteBtn.textContent = 'Delete';
+				return;
+			}
+			window.location.href = '/admin/jobs?deleted=1';
+		} catch {
+			showError('Could not reach the server. Please try again.');
+			deleteBtn.disabled = false;
+			deleteBtn.textContent = 'Delete';
+		}
+	});
+</script>

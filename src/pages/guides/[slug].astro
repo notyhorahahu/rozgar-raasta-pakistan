@@ -1,125 +1,170 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArticleCard from '../../components/ArticleCard.astro';
-import { getCollection, render } from 'astro:content';
-import { slugOf, publishedGuides } from '../../data/guides';
+import { render } from 'astro:content';
+import { slugOf } from '../../data/guides';
+import { getGuideBySlug, getGuides, renderGuideBody } from '../../lib/content';
 import { breadcrumbJsonLd } from '../../data/jsonld';
 
-export async function getStaticPaths() {
-	// Future-dated guides are not published until their date.
-	const guides = publishedGuides(await getCollection('guides'));
-	return guides.map((g) => ({ params: { slug: slugOf(g) }, props: { guide: g } }));
+// Server-rendered: the guide is read from the database (src/lib/content.ts)
+// so admin edits appear here at once; the static collection is the fallback.
+export const prerender = false;
+
+const slug = Astro.params.slug ?? '';
+const guide = await getGuideBySlug(slug);
+if (!guide) {
+	Astro.response.status = 404;
 }
 
-const { guide } = Astro.props;
-const { Content } = await render(guide);
-const { title, description, category, date, updated, author, image, imageAlt, video, videoTitle, videoChannel, videoUrl, videoNote } = guide.data;
 const siteUrl = 'https://rozgar-raasta-pakistan.vercel.app';
 
-const allGuides = publishedGuides(await getCollection('guides'))
-	.filter((g) => slugOf(g) !== slugOf(guide) && (g.data.category === category || g.data.tags.some((t) => guide.data.tags.includes(t))))
-	.sort((a, b) => b.data.updated.valueOf() - a.data.updated.valueOf())
-	.slice(0, 3);
+// Body rendering: collection guides use Astro's renderer (as before);
+// database guides render their Markdown with `marked` + sanitisation
+// (see renderGuideBody in src/lib/content.ts).
+let Content: Awaited<ReturnType<typeof render>>['Content'] | null = null;
+let bodyHtml: string | null = null;
+if (guide?.source === 'collection' && guide.collectionEntry) {
+	({ Content } = await render(guide.collectionEntry));
+} else if (guide) {
+	bodyHtml = renderGuideBody(guide.body);
+}
+
+const title = guide?.data.title ?? 'Guide not found';
+const description = guide?.data.description ?? 'This guide does not exist or is no longer published.';
+const category = guide?.data.category ?? '';
+const date = guide?.data.date ?? new Date(0);
+const updated = guide?.data.updated ?? new Date(0);
+const author = guide?.data.author ?? 'Rozgar Raasta Team';
+const image = guide?.data.image;
+const imageAlt = guide?.data.imageAlt;
+const video = guide?.data.video;
+const videoTitle = guide?.data.videoTitle;
+const videoChannel = guide?.data.videoChannel;
+const videoUrl = guide?.data.videoUrl;
+const videoNote = guide?.data.videoNote;
+
+const allGuides = guide
+	? (await getGuides())
+			.filter((g) => slugOf(g) !== slugOf(guide) && (g.data.category === category || g.data.tags.some((t) => guide.data.tags.includes(t))))
+			.sort((a, b) => b.data.updated.valueOf() - a.data.updated.valueOf())
+			.slice(0, 3)
+	: [];
 
 const fmt = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-const jsonLd = [
-	{
-		'@context': 'https://schema.org',
-		'@type': 'Article',
-		headline: title,
-		description,
-		author: { '@type': 'Organization', name: author },
-		publisher: { '@type': 'Organization', name: 'Rozgar Raasta Pakistan', logo: { '@type': 'ImageObject', url: 'https://rozgar-raasta-pakistan.vercel.app/logo.svg' } },
-		datePublished: date.toISOString(),
-		dateModified: updated.toISOString(),
-		mainEntityOfPage: { '@type': 'WebPage', '@id': `https://rozgar-raasta-pakistan.vercel.app/guides/${slugOf(guide)}` },
-		...(image ? { image: `${siteUrl}${image}` } : {}),
-		...(video
-			? {
-					video: {
-						'@type': 'VideoObject',
-						name: videoTitle ?? `Watch: ${title}`,
-						description: videoNote ?? description,
-						thumbnailUrl: image ? `${siteUrl}${image}` : `${siteUrl}/og-default.svg`,
-						contentUrl: `${siteUrl}${video}`,
-						uploadDate: date.toISOString().split('T')[0],
-					},
-				}
-			: {}),
-	},
-	breadcrumbJsonLd([
-		{ name: 'Home', url: `${siteUrl}/` },
-		{ name: 'Guides', url: `${siteUrl}/guides` },
-		{ name: title, url: `${siteUrl}/guides/${slugOf(guide)}` },
-	]),
-];
+const jsonLd = guide
+	? [
+			{
+				'@context': 'https://schema.org',
+				'@type': 'Article',
+				headline: title,
+				description,
+				author: { '@type': 'Organization', name: author },
+				publisher: { '@type': 'Organization', name: 'Rozgar Raasta Pakistan', logo: { '@type': 'ImageObject', url: 'https://rozgar-raasta-pakistan.vercel.app/logo.svg' } },
+				datePublished: date.toISOString(),
+				dateModified: updated.toISOString(),
+				mainEntityOfPage: { '@type': 'WebPage', '@id': `https://rozgar-raasta-pakistan.vercel.app/guides/${slugOf(guide)}` },
+				...(image ? { image: `${siteUrl}${image}` } : {}),
+				...(video
+					? {
+							video: {
+								'@type': 'VideoObject',
+								name: videoTitle ?? `Watch: ${title}`,
+								description: videoNote ?? description,
+								thumbnailUrl: image ? `${siteUrl}${image}` : `${siteUrl}/og-default.svg`,
+								contentUrl: `${siteUrl}${video}`,
+								uploadDate: date.toISOString().split('T')[0],
+							},
+						}
+					: {}),
+			},
+			breadcrumbJsonLd([
+				{ name: 'Home', url: `${siteUrl}/` },
+				{ name: 'Guides', url: `${siteUrl}/guides` },
+				{ name: title, url: `${siteUrl}/guides/${slugOf(guide)}` },
+			]),
+		]
+	: [];
 ---
+
 <BaseLayout
 	title={title}
 	description={description}
 	type="article"
-	publishedTime={date.toISOString()}
-	modifiedTime={updated.toISOString()}
+	publishedTime={guide ? date.toISOString() : undefined}
+	modifiedTime={guide ? updated.toISOString() : undefined}
 	jsonLd={jsonLd}
 >
-	<article class="max-w-3xl mx-auto px-4 py-10">
-		<nav aria-label="Breadcrumb" class="text-sm text-muted">
-			<a href="/" class="hover:underline">Home</a> / <a href="/guides" class="hover:underline">Guides</a> / <span class="text-navy-900 capitalize">{category.replace('-', ' ')}</span>
-		</nav>
-		<h1 class="mt-4 text-3xl md:text-4xl leading-tight">{title}</h1>
-		<p class="mt-4 text-lg leading-relaxed text-body">{description}</p>
-		<div class="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-y border-line py-3 text-sm text-muted">
-			<span>By <strong class="text-navy-900">{author}</strong></span>
-			<span>Published <time datetime={date.toISOString()}>{fmt(date)}</time></span>
-			<span>Last verified <time datetime={updated.toISOString()}>{fmt(updated)}</time></span>
-			<span class="bg-brand-50 px-2.5 py-1 font-semibold capitalize text-brand-700">{category.replace('-', ' ')}</span>
-		</div>
-		{image && (
-			<figure class="mt-6">
-				<img src={image} alt={imageAlt ?? title} loading="lazy" class="w-full rounded-md object-cover shadow-sm" />
-			</figure>
-		)}
-		<div class="prose-rrp mt-6">
-			<Content />
-		</div>
-		{video && (
-			<section class="mt-10" aria-label="Watch: how to apply">
-				<h2 class="text-2xl md:text-3xl">Watch: how to apply</h2>
-				<div class="mt-4 overflow-hidden rounded-md border border-line bg-black shadow-sm">
-					<video controls preload="metadata" poster={image} class="aspect-video w-full">
-						<source src={video} type="video/mp4" />
-						Your browser does not support the video player. You can watch the original video on YouTube instead.
-					</video>
+	{!guide ? (
+		<article class="max-w-3xl mx-auto px-4 py-16">
+			<h1 class="text-3xl md:text-4xl leading-tight">Guide not found</h1>
+			<p class="mt-4 text-lg leading-relaxed text-body">This guide does not exist, or it has been unpublished. Browse the <a href="/guides" class="font-semibold text-brand-700 hover:underline">full guides list</a> to find what you were looking for.</p>
+		</article>
+	) : (
+		<>
+			<article class="max-w-3xl mx-auto px-4 py-10">
+				<nav aria-label="Breadcrumb" class="text-sm text-muted">
+					<a href="/" class="hover:underline">Home</a> / <a href="/guides" class="hover:underline">Guides</a> / <span class="text-navy-900 capitalize">{category.replace('-', ' ')}</span>
+				</nav>
+				<h1 class="mt-4 text-3xl md:text-4xl leading-tight">{title}</h1>
+				<p class="mt-4 text-lg leading-relaxed text-body">{description}</p>
+				<div class="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-y border-line py-3 text-sm text-muted">
+					<span>By <strong class="text-navy-900">{author}</strong></span>
+					<span>Published <time datetime={date.toISOString()}>{fmt(date)}</time></span>
+					<span>Last verified <time datetime={updated.toISOString()}>{fmt(updated)}</time></span>
+					<span class="bg-brand-50 px-2.5 py-1 font-semibold capitalize text-brand-700">{category.replace('-', ' ')}</span>
 				</div>
-				<p class="mt-3 text-sm leading-relaxed text-body">
-					{videoTitle && <><strong class="text-navy-900">{videoTitle}</strong>{videoChannel && <> — {videoChannel}</>}. </>}
-					{videoNote}
-					{videoUrl && (
-						<> Clip taken from the original video: <a href={videoUrl} target="_blank" rel="noopener noreferrer" class="font-semibold text-brand-700 hover:underline">watch the full video on YouTube ↗</a>.</>
-					)}
-				</p>
-			</section>
-		)}
-		<div class="mt-10 rounded-md border border-line bg-brand-50 p-5">
-			<h2 class="text-lg">Share this guide</h2>
-			<p class="mt-1 text-sm text-body">Help someone else find a real opportunity — share the link, not a screenshot.</p>
-			<div class="mt-3 flex flex-wrap gap-2">
-				<a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://rozgar-raasta-pakistan.vercel.app/guides/${slugOf(guide)}`)}`} target="_blank" rel="noopener noreferrer" class=" bg-[#1877f2] px-4 py-2 text-sm font-semibold text-white">Share on Facebook</a>
-				<a href={`https://www.reddit.com/submit?url=${encodeURIComponent(`https://rozgar-raasta-pakistan.vercel.app/guides/${slugOf(guide)}`)}&title=${encodeURIComponent(title)}`} target="_blank" rel="noopener noreferrer" class=" bg-[#ff4500] px-4 py-2 text-sm font-semibold text-white">Share on Reddit</a>
-				<a href={`https://www.quora.com/share?url=${encodeURIComponent(`https://rozgar-raasta-pakistan.vercel.app/guides/${slugOf(guide)}`)}`} target="_blank" rel="noopener noreferrer" class=" bg-[#b92b27] px-4 py-2 text-sm font-semibold text-white">Share on Quora</a>
-				<button id="copy-link" type="button" class=" border border-line bg-white px-4 py-2 text-sm font-semibold text-navy-900">Copy link</button>
-			</div>
-			<p id="copy-msg" class="mt-2 hidden text-sm text-emerald-700" role="status">Link copied to clipboard.</p>
-		</div>
-	</article>
+				{image && (
+					<figure class="mt-6">
+						<img src={image} alt={imageAlt ?? title} loading="lazy" class="w-full rounded-md object-cover shadow-sm" />
+					</figure>
+				)}
+				{Content ? (
+					<div class="prose-rrp mt-6">
+						<Content />
+					</div>
+				) : (
+					<div class="prose-rrp mt-6" set:html={bodyHtml} />
+				)}
+				{video && (
+					<section class="mt-10" aria-label="Watch: how to apply">
+						<h2 class="text-2xl md:text-3xl">Watch: how to apply</h2>
+						<div class="mt-4 overflow-hidden rounded-md border border-line bg-black shadow-sm">
+							<video controls preload="metadata" poster={image} class="aspect-video w-full">
+								<source src={video} type="video/mp4" />
+								Your browser does not support the video player. You can watch the original video on YouTube instead.
+							</video>
+						</div>
+						<p class="mt-3 text-sm leading-relaxed text-body">
+							{videoTitle && <><strong class="text-navy-900">{videoTitle}</strong>{videoChannel && <> — {videoChannel}</>}. </>}
+							{videoNote}
+							{videoUrl && (
+								<> Clip taken from the original video: <a href={videoUrl} target="_blank" rel="noopener noreferrer" class="font-semibold text-brand-700 hover:underline">watch the full video on YouTube ↗</a>.</>
+							)}
+						</p>
+					</section>
+				)}
+				<div class="mt-10 rounded-md border border-line bg-brand-50 p-5">
+					<h2 class="text-lg">Share this guide</h2>
+					<p class="mt-1 text-sm text-body">Help someone else find a real opportunity — share the link, not a screenshot.</p>
+					<div class="mt-3 flex flex-wrap gap-2">
+						<a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://rozgar-raasta-pakistan.vercel.app/guides/${slugOf(guide)}`)}`} target="_blank" rel="noopener noreferrer" class=" bg-[#1877f2] px-4 py-2 text-sm font-semibold text-white">Share on Facebook</a>
+						<a href={`https://www.reddit.com/submit?url=${encodeURIComponent(`https://rozgar-raasta-pakistan.vercel.app/guides/${slugOf(guide)}`)}&title=${encodeURIComponent(title)}`} target="_blank" rel="noopener noreferrer" class=" bg-[#ff4500] px-4 py-2 text-sm font-semibold text-white">Share on Reddit</a>
+						<a href={`https://www.quora.com/share?url=${encodeURIComponent(`https://rozgar-raasta-pakistan.vercel.app/guides/${slugOf(guide)}`)}`} target="_blank" rel="noopener noreferrer" class=" bg-[#b92b27] px-4 py-2 text-sm font-semibold text-white">Share on Quora</a>
+						<button id="copy-link" type="button" class=" border border-line bg-white px-4 py-2 text-sm font-semibold text-navy-900">Copy link</button>
+					</div>
+					<p id="copy-msg" class="mt-2 hidden text-sm text-emerald-700" role="status">Link copied to clipboard.</p>
+				</div>
+			</article>
 
-	{allGuides.length > 0 && (
-		<section class="max-w-7xl mx-auto px-4 pb-10" aria-label="Related articles">
-			<h2 class="text-2xl md:text-3xl">Related Articles</h2>
-			<div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-				{allGuides.map((g) => <ArticleCard guide={g} />)}
-			</div>
-		</section>
+			{allGuides.length > 0 && (
+				<section class="max-w-7xl mx-auto px-4 pb-10" aria-label="Related articles">
+					<h2 class="text-2xl md:text-3xl">Related Articles</h2>
+					<div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+						{allGuides.map((g) => <ArticleCard guide={g} />)}
+					</div>
+				</section>
+			)}
+		</>
 	)}
 </BaseLayout>
 
