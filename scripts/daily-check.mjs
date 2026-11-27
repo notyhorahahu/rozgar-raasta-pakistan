@@ -16,6 +16,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const SITE = process.env.RRP_SITE_URL || 'https://rozgar-raasta-pakistan.vercel.app';
+const ADMIN_SITE = process.env.RRP_ADMIN_URL || 'https://rozgar-admin.vercel.app';
 const TODAY = new Date().toISOString().slice(0, 10);
 
 let failures = [];
@@ -43,7 +44,7 @@ async function checkLive() {
     'opportunities', 'jobs/government', 'jobs/private', 'jobs/remote',
     'earning', 'freelancing', 'skills', 'scholarships', 'internships',
     'ai-tools', 'student-guides', 'business-guides', 'cv-builder',
-    'career-preparation', 'guides', 'search', 'admin',
+    'career-preparation', 'guides', 'search',
     'sitemap-index.xml', 'robots.txt', 'rss.xml', 'favicon.svg',
   ];
   for (const p of pages) {
@@ -52,6 +53,14 @@ async function checkLive() {
     if (status === 200) pass(`GET /${p} -> 200`);
     else fail(`GET /${p} -> ${status || 'no response'} (expected 200)`);
   }
+  // Admin lives on its own domain now (27 Nov 2026) — the public domain
+  // must NOT serve /admin/* at all, and the admin domain must serve login.
+  const pubAdmin = await headOk(`${SITE}/admin/login`);
+  if (pubAdmin === 404) pass('GET /admin/login on public domain -> 404 (admin separated)');
+  else fail(`GET /admin/login on public domain -> ${pubAdmin} (expected 404)`);
+  const admLogin = await headOk(`${ADMIN_SITE}/admin/login`);
+  if (admLogin === 200) pass('GET /admin/login on admin domain -> 200');
+  else fail(`GET /admin/login on admin domain -> ${admLogin} (expected 200)`);
   // 404 must stay 404
   const s404 = await headOk(`${SITE}/this-page-does-not-exist-xyz/`);
   if (s404 === 404) pass('GET /this-page-does-not-exist-xyz/ -> 404 (correct)');
