@@ -16,8 +16,9 @@
 // (id / data / body) so ArticleCard and the guide page work unchanged;
 // DB rows carry source: 'database', collection rows source: 'collection'.
 import { getCollection, type CollectionEntry } from 'astro:content';
+import { parseDocument, DomUtils } from 'htmlparser2';
+import render from 'dom-serializer';
 import { marked } from 'marked';
-import sanitizeHtml from 'sanitize-html';
 import opportunitiesData from '../data/opportunities.json';
 import { publishedGuides, slugOf, todayPKT } from '../data/guides';
 import type { Opportunity } from '../data/opportunities';
@@ -300,21 +301,81 @@ export async function getDashboardCounts(): Promise<DashboardCounts> {
 
 /**
  * Render a DB guide's Markdown body to HTML. Only admins author guides,
- * but the HTML is still sanitised with a real HTML sanitiser
- * (sanitize-html) — the previous regex approach missed vectors such as
- * xlink:href="javascript:…", formaction, data:text/html, <svg>/<math>
- * payloads and entity-encoded schemes. sanitize-html strips all of
- * those and only allows a safe allowlist of tags/attributes.
+ * but the HTML is still sanitised with a real DOM-based sanitiser built
+ * on htmlparser2 (ESM — works in the Vercel serverless runtime, unlike
+ * sanitize-html, whose CommonJS build require()s the ESM htmlparser2
+ * and crashes every server-rendered page with ERR_REQUIRE_ESM).
+ *
+ * The sanitiser parses the HTML into a DOM, drops dangerous tags
+ * entirely (script, iframe, object, embed, form, style, link, meta,
+ * base, svg, math and anything not on the allowlist), strips every
+ * event-handler attribute, and only allows http/https/mailto URLs.
+ * This closes the vectors the old regex approach missed
+ * (xlink:href="javascript:…", formaction, data:text/html, <svg>/<math>
+ * payloads, entity-encoded schemes) because the parser — not a regex —
+ * decides what is a tag and what is an attribute.
  */
+const SAFE_TAGS = new Set([
+	'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+	'ul', 'ol', 'li', 'blockquote', 'pre', 'code',
+	'em', 'strong', 'b', 'i', 'u', 's', 'a', 'img',
+	'br', 'hr', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
+	'div', 'span', 'section', 'article',
+]);
+const SAFE_ATTRS: Record<string, Set<string>> = {
+	a: new Set(['href', 'title']),
+	img: new Set(['src', 'alt', 'title', 'width', 'height']),
+};
+const SAFE_SCHEMES = ['http:', 'https:', 'mailto:'];
+
+function sanitiseNode(node: any): void {
+	if (!node || typeof node !== 'object') return;
+	// Text / comment / directive nodes have no children to clean, but
+	// comments are dropped (they can hide conditional-IE payloads).
+	if (node.type === 'comment') {
+		DomUtils.removeElement(node);
+		return;
+	}
+	if (node.type !== 'tag' && node.type !== 'script' && node.type !== 'style') {
+		// Text nodes: recurse into children if any (directives etc.).
+		if (Array.isArray(node.children)) {
+			for (const child of [...node.children]) sanitiseNode(child);
+		}
+		return;
+	}
+	const name = (node.name ?? '').toLowerCase();
+	if (!SAFE_TAGS.has(name)) {
+		// Dangerous or unknown tag: drop it AND its children entirely.
+		DomUtils.removeElement(node);
+		return;
+	}
+	// Safe tag: strip every attribute that is not explicitly allowlisted,
+	// and validate URL attributes against the safe schemes.
+	const allowed = SAFE_ATTRS[name] ?? new Set<string>();
+	for (const attr of Object.keys(node.attribs ?? {})) {
+		const lower = attr.toLowerCase();
+		if (lower.startsWith('on') || !allowed.has(lower)) {
+			delete node.attribs[attr];
+			continue;
+		}
+		if (lower === 'href' || lower === 'src') {
+			const value = (node.attribs[attr] ?? '').trim().toLowerCase();
+			const ok = SAFE_SCHEMES.some((s) => value.startsWith(s));
+			if (!ok) delete node.attribs[attr];
+		}
+	}
+	if (Array.isArray(node.children)) {
+		for (const child of [...node.children]) sanitiseNode(child);
+	}
+}
+
+export function sanitiseHtml(html: string): string {
+	const dom = parseDocument(html);
+	for (const child of [...dom.children]) sanitiseNode(child);
+	return render(dom);
+}
+
 export function renderGuideBody(markdown: string): string {
 	const raw = marked.parse(markdown, { async: false }) as string;
-	return sanitizeHtml(raw, {
-		allowedTags: sanitizeHtml.defaults.allowedTags.concat(['h1', 'h2', 'img']),
-		allowedAttributes: {
-			a: ['href', 'title'],
-			img: ['src', 'alt', 'title', 'width', 'height'],
-		},
-		allowedSchemes: ['http', 'https', 'mailto'],
-		allowProtocolRelative: false,
-	});
+	return sanitiseHtml(raw);
 }
